@@ -98,124 +98,6 @@ package global.phaser.cameras.scene2d;
 	**/
 	var deadzone : global.phaser.geom.Rectangle;
 	/**
-		Is this Camera rendering directly to the canvas or to a texture?
-		
-		Enable rendering to texture with the method `setRenderToTexture` (just enabling this boolean won't be enough)
-		
-		Once enabled you can toggle it by switching this property.
-		
-		To properly remove a render texture you should call the `clearRenderToTexture()` method.
-	**/
-	var renderToTexture : Bool;
-	/**
-		If this Camera is rendering to a texture (via `setRenderToTexture`) then you
-		have the option to control if it should also render to the Game canvas as well.
-		
-		By default, a Camera will render both to its texture and to the Game canvas.
-		
-		However, if you set ths property to `false` it will only render to the texture
-		and skip rendering to the Game canvas.
-		
-		Setting this property if the Camera isn't rendering to a texture has no effect.
-	**/
-	var renderToGame : Bool;
-	/**
-		If this Camera has been set to render to a texture then this holds a reference
-		to the HTML Canvas Element that the Camera is drawing to.
-		
-		Enable texture rendering using the method `setRenderToTexture`.
-		
-		This is only populated if Phaser is running with the Canvas Renderer.
-	**/
-	var canvas : js.html.CanvasElement;
-	/**
-		If this Camera has been set to render to a texture then this holds a reference
-		to the Rendering Context belonging to the Canvas element the Camera is drawing to.
-		
-		Enable texture rendering using the method `setRenderToTexture`.
-		
-		This is only populated if Phaser is running with the Canvas Renderer.
-	**/
-	var context : js.html.CanvasRenderingContext2D;
-	/**
-		If this Camera has been set to render to a texture then this holds a reference
-		to the GL Texture belonging the Camera is drawing to.
-		
-		Enable texture rendering using the method `setRenderToTexture`.
-		
-		This is only set if Phaser is running with the WebGL Renderer.
-	**/
-	var glTexture : js.html.webgl.Texture;
-	/**
-		If this Camera has been set to render to a texture then this holds a reference
-		to the GL Frame Buffer belonging the Camera is drawing to.
-		
-		Enable texture rendering using the method `setRenderToTexture`.
-		
-		This is only set if Phaser is running with the WebGL Renderer.
-	**/
-	var framebuffer : js.html.webgl.Framebuffer;
-	/**
-		If this Camera has been set to render to a texture and to use a custom pipeline,
-		then this holds a reference to the pipeline the Camera is drawing with.
-		
-		Enable texture rendering using the method `setRenderToTexture`.
-		
-		This is only set if Phaser is running with the WebGL Renderer.
-	**/
-	var pipeline : Dynamic;
-	/**
-		Sets the Camera to render to a texture instead of to the main canvas.
-		
-		The Camera will redirect all Game Objects it's asked to render to this texture.
-		
-		During the render sequence, the texture itself will then be rendered to the main canvas.
-		
-		Doing this gives you the ability to modify the texture before this happens,
-		allowing for special effects such as Camera specific shaders, or post-processing
-		on the texture.
-		
-		If running under Canvas the Camera will render to its `canvas` property.
-		
-		If running under WebGL the Camera will create a frame buffer, which is stored in its `framebuffer` and `glTexture` properties.
-		
-		If you set a camera to render to a texture then it will emit 2 events during the render loop:
-		
-		First, it will emit the event `prerender`. This happens right before any Game Object's are drawn to the Camera texture.
-		
-		Then, it will emit the event `postrender`. This happens after all Game Object's have been drawn, but right before the
-		Camera texture is rendered to the main game canvas. It's the final point at which you can manipulate the texture before
-		it appears in-game.
-		
-		You should not enable this unless you plan on actually using the texture it creates
-		somehow, otherwise you're just doubling the work required to render your game.
-		
-		If you only require the Camera to render to a texture, and not also to the Game,
-		them set the `renderToGame` parameter to `false`.
-		
-		To temporarily disable rendering to a texture, toggle the `renderToTexture` boolean.
-		
-		If you no longer require the Camera to render to a texture, call the `clearRenderToTexture` method,
-		which will delete the respective textures and free-up resources.
-	**/
-	function setRenderToTexture(?pipeline:ts.AnyOf2<String, global.phaser.renderer.webgl.WebGLPipeline>, ?renderToGame:Bool):Camera;
-	/**
-		Sets the WebGL pipeline this Camera is using when rendering to a texture.
-		
-		You can pass either the string-based name of the pipeline, or a reference to the pipeline itself.
-		
-		Call this method with no arguments to clear any previously set pipeline.
-	**/
-	function setPipeline(?pipeline:ts.AnyOf2<String, global.phaser.renderer.webgl.WebGLPipeline>):Camera;
-	/**
-		If this Camera was set to render to a texture, this will clear the resources it was using and
-		redirect it to render back to the primary Canvas again.
-		
-		If you only wish to temporarily disable rendering to a texture then you can toggle the
-		property `renderToTexture` instead.
-	**/
-	function clearRenderToTexture():Camera;
-	/**
 		Sets the Camera dead zone.
 		
 		The deadzone is only used when the camera is following a target.
@@ -370,7 +252,34 @@ package global.phaser.cameras.scene2d;
 	**/
 	function resetFlip():Camera;
 	/**
-		Fill or additive?
+		The tint value being applied to the top-left vertice of the Game Object.
+		This value is interpolated from the corner to the center of the Game Object.
+		The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+	**/
+	var tintTopLeft : Float;
+	/**
+		The tint value being applied to the top-right vertice of the Game Object.
+		This value is interpolated from the corner to the center of the Game Object.
+		The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+	**/
+	var tintTopRight : Float;
+	/**
+		The tint value being applied to the bottom-left vertice of the Game Object.
+		This value is interpolated from the corner to the center of the Game Object.
+		The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+	**/
+	var tintBottomLeft : Float;
+	/**
+		The tint value being applied to the bottom-right vertice of the Game Object.
+		This value is interpolated from the corner to the center of the Game Object.
+		The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+	**/
+	var tintBottomRight : Float;
+	/**
+		The tint fill mode.
+		
+		`false` = An additive tint (the default), where vertices colors are blended with the texture.
+		`true` = A fill tint, where the vertices colors replace the texture, but respects texture alpha.
 	**/
 	var tintFill : Bool;
 	/**
@@ -416,34 +325,110 @@ package global.phaser.cameras.scene2d;
 	**/
 	function setTintFill(?topLeft:Float, ?topRight:Float, ?bottomLeft:Float, ?bottomRight:Float):Camera;
 	/**
-		The tint value being applied to the top-left of the Game Object.
-		This value is interpolated from the corner to the center of the Game Object.
-	**/
-	var tintTopLeft : Float;
-	/**
-		The tint value being applied to the top-right of the Game Object.
-		This value is interpolated from the corner to the center of the Game Object.
-	**/
-	var tintTopRight : Float;
-	/**
-		The tint value being applied to the bottom-left of the Game Object.
-		This value is interpolated from the corner to the center of the Game Object.
-	**/
-	var tintBottomLeft : Float;
-	/**
-		The tint value being applied to the bottom-right of the Game Object.
-		This value is interpolated from the corner to the center of the Game Object.
-	**/
-	var tintBottomRight : Float;
-	/**
 		The tint value being applied to the whole of the Game Object.
 		This property is a setter-only. Use the properties `tintTopLeft` etc to read the current tint value.
 	**/
 	var tint : Float;
 	/**
-		Does this Game Object have a tint applied to it or not?
+		Does this Game Object have a tint applied?
+		
+		It checks to see if the 4 tint properties are set to the value 0xffffff
+		and that the `tintFill` property is `false`. This indicates that a Game Object isn't tinted.
 	**/
 	final isTinted : Bool;
+	/**
+		The initial WebGL pipeline of this Game Object.
+		
+		If you call `resetPipeline` on this Game Object, the pipeline is reset to this default.
+	**/
+	var defaultPipeline : global.phaser.renderer.webgl.WebGLPipeline;
+	/**
+		The current WebGL pipeline of this Game Object.
+	**/
+	var pipeline : global.phaser.renderer.webgl.WebGLPipeline;
+	/**
+		Does this Game Object have any Post Pipelines set?
+	**/
+	var hasPostPipeline : Bool;
+	/**
+		The WebGL Post FX Pipelines this Game Object uses for post-render effects.
+		
+		The pipelines are processed in the order in which they appear in this array.
+		
+		If you modify this array directly, be sure to set the
+		`hasPostPipeline` property accordingly.
+	**/
+	var postPipeline : Array<global.phaser.renderer.webgl.pipelines.PostFXPipeline>;
+	/**
+		An object to store pipeline specific data in, to be read by the pipelines this Game Object uses.
+	**/
+	var pipelineData : Dynamic;
+	/**
+		Sets the initial WebGL Pipeline of this Game Object.
+		
+		This should only be called during the instantiation of the Game Object. After that, use `setPipeline`.
+	**/
+	function initPipeline(pipeline:ts.AnyOf2<String, global.phaser.renderer.webgl.WebGLPipeline>):Bool;
+	/**
+		Sets the main WebGL Pipeline of this Game Object.
+		
+		Also sets the `pipelineData` property, if the parameter is given.
+		
+		Both the pipeline and post pipelines share the same pipeline data object.
+	**/
+	function setPipeline(pipeline:ts.AnyOf2<String, global.phaser.renderer.webgl.WebGLPipeline>, ?pipelineData:Dynamic, ?copyData:Bool):Camera;
+	/**
+		Sets one, or more, Post Pipelines on this Game Object.
+		
+		Post Pipelines are invoked after this Game Object has rendered to its target and
+		are commonly used for post-fx.
+		
+		The post pipelines are appended to the `postPipelines` array belonging to this
+		Game Object. When the renderer processes this Game Object, it iterates through the post
+		pipelines in the order in which they appear in the array. If you are stacking together
+		multiple effects, be aware that the order is important.
+		
+		If you call this method multiple times, the new pipelines will be appended to any existing
+		post pipelines already set. Use the `resetPostPipeline` method to clear them first, if required.
+		
+		You can optionally also sets the `pipelineData` property, if the parameter is given.
+		
+		Both the pipeline and post pipelines share the pipeline data object together.
+	**/
+	function setPostPipeline(pipelines:ts.AnyOf6<String, haxe.Constraints.Function, Array<haxe.Constraints.Function>, Array<String>, global.phaser.renderer.webgl.pipelines.PostFXPipeline, Array<global.phaser.renderer.webgl.pipelines.PostFXPipeline>>, ?pipelineData:Dynamic, ?copyData:Bool):Camera;
+	/**
+		Adds an entry to the `pipelineData` object belonging to this Game Object.
+		
+		If the 'key' already exists, its value is updated. If it doesn't exist, it is created.
+		
+		If `value` is undefined, and `key` exists, `key` is removed from the data object.
+		
+		Both the pipeline and post pipelines share the pipeline data object together.
+	**/
+	function setPipelineData(key:String, ?value:Dynamic):Camera;
+	/**
+		Gets a Post Pipeline instance from this Game Object, based on the given name, and returns it.
+	**/
+	function getPostPipeline(pipeline:ts.AnyOf3<String, haxe.Constraints.Function, global.phaser.renderer.webgl.pipelines.PostFXPipeline>):ts.AnyOf2<global.phaser.renderer.webgl.pipelines.PostFXPipeline, Array<global.phaser.renderer.webgl.pipelines.PostFXPipeline>>;
+	/**
+		Resets the WebGL Pipeline of this Game Object back to the default it was created with.
+	**/
+	function resetPipeline(?resetPostPipelines:Bool, ?resetData:Bool):Bool;
+	/**
+		Resets the WebGL Post Pipelines of this Game Object. It does this by calling
+		the `destroy` method on each post pipeline and then clearing the local array.
+	**/
+	function resetPostPipeline(?resetData:Bool):Void;
+	/**
+		Removes a type of Post Pipeline instances from this Game Object, based on the given name, and destroys them.
+		
+		If you wish to remove all Post Pipelines use the `resetPostPipeline` method instead.
+	**/
+	function removePostPipeline(pipeline:ts.AnyOf2<String, global.phaser.renderer.webgl.pipelines.PostFXPipeline>):Camera;
+	/**
+		Gets the name of the WebGL Pipeline this Game Object is currently using.
+	**/
+	function getPipelineName():String;
 	/**
 		Set the Alpha level of this Camera. The alpha controls the opacity of the Camera as it renders.
 		Alpha values are provided as a float between 0, fully transparent, and 1, fully opaque.
@@ -551,8 +536,6 @@ package global.phaser.cameras.scene2d;
 	function setRoundPixels(value:Bool):Camera;
 	/**
 		Sets the Scene the Camera is bound to.
-		
-		Also populates the `resolution` property and updates the internal size values.
 	**/
 	function setScene(scene:global.phaser.Scene):Camera;
 	/**
@@ -592,8 +575,10 @@ package global.phaser.cameras.scene2d;
 		A value of 1 means 'no zoom' and is the default.
 		
 		Changing the zoom does not impact the Camera viewport in any way, it is only applied during rendering.
+		
+		As of Phaser 3.50 you can now set the horizontal and vertical zoom values independently.
 	**/
-	function setZoom(?value:Float):Camera;
+	function setZoom(?x:Float, ?y:Float):Camera;
 	/**
 		Sets the mask to be applied to this Camera during rendering.
 		
@@ -605,8 +590,6 @@ package global.phaser.cameras.scene2d;
 		
 		Masks have no impact on physics or input detection. They are purely a rendering component
 		that allows you to limit what is visible during the render pass.
-		
-		Note: You cannot mask a Camera that has `renderToTexture` set.
 	**/
 	function setMask(mask:ts.AnyOf2<global.phaser.display.masks.BitmapMask, global.phaser.display.masks.GeometryMask>, ?fixedPosition:Bool):Camera;
 	/**

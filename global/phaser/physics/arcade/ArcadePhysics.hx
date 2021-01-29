@@ -24,7 +24,7 @@ package global.phaser.physics.arcade;
 	/**
 		A configuration object. Union of the `physics.arcade.*` properties of the GameConfig and SceneConfig objects.
 	**/
-	var config : Dynamic;
+	var config : global.phaser.types.physics.arcade.ArcadeWorldConfig;
 	/**
 		The physics simulation.
 	**/
@@ -34,9 +34,27 @@ package global.phaser.physics.arcade;
 	**/
 	var add : Factory;
 	/**
+		Causes `World.update` to be automatically called each time the Scene
+		emits and `UPDATE` event. This is the default setting, so only needs
+		calling if you have specifically disabled it.
+	**/
+	function enableUpdate():Void;
+	/**
+		Causes `World.update` to **not** be automatically called each time the Scene
+		emits and `UPDATE` event.
+		
+		If you wish to run the World update at your own rate, or from your own
+		component, then you should call this method to disable the built-in link,
+		and then call `World.update(delta, time)` accordingly.
+		
+		Note that `World.postUpdate` is always automatically called when the Scene
+		emits a `POST_UPDATE` event, regardless of this setting.
+	**/
+	function disableUpdate():Void;
+	/**
 		Creates the physics configuration for the current Scene.
 	**/
-	function getConfig():Dynamic;
+	function getConfig():global.phaser.types.physics.arcade.ArcadeWorldConfig;
 	/**
 		Tests if Game Objects overlap. See {@link Phaser.Physics.Arcade.World#overlap}
 	**/

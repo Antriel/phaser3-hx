@@ -99,16 +99,17 @@ package global.phaser.utils;
 		Create an array representing the range of numbers (usually integers), between, and inclusive of,
 		the given `start` and `end` arguments. For example:
 		
-		`var array = numberArray(2, 4); // array = [2, 3, 4]`
-		`var array = numberArray(0, 9); // array = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]`
+		`var array = Phaser.Utils.Array.NumberArray(2, 4); // array = [2, 3, 4]`
+		`var array = Phaser.Utils.Array.NumberArray(0, 9); // array = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]`
+		`var array = Phaser.Utils.Array.NumberArray(8, 2); // array = [8, 7, 6, 5, 4, 3, 2]`
 		
-		This is equivalent to `numberArrayStep(start, end, 1)`.
+		This is equivalent to `Phaser.Utils.Array.NumberArrayStep(start, end, 1)`.
 		
 		You can optionally provide a prefix and / or suffix string. If given the array will contain
 		strings, not integers. For example:
 		
-		`var array = numberArray(1, 4, 'Level '); // array = ["Level 1", "Level 2", "Level 3", "Level 4"]`
-		`var array = numberArray(5, 7, 'HD-', '.png'); // array = ["HD-5.png", "HD-6.png", "HD-7.png"]`
+		`var array = Phaser.Utils.Array.NumberArray(1, 4, 'Level '); // array = ["Level 1", "Level 2", "Level 3", "Level 4"]`
+		`var array = Phaser.Utils.Array.NumberArray(5, 7, 'HD-', '.png'); // array = ["HD-5.png", "HD-6.png", "HD-7.png"]`
 	**/
 	static function NumberArray(start:Float, end:Float, ?prefix:String, ?suffix:String):ts.AnyOf2<Array<String>, Array<Float>>;
 	/**
@@ -234,15 +235,25 @@ package global.phaser.utils;
 	**/
 	static function Shuffle<T>(array:Array<T>):Array<T>;
 	/**
+		Takes the given array and runs a numeric sort on it, ignoring any non-digits that
+		may be in the entries.
+		
+		You should only run this on arrays containing strings.
+	**/
+	static function SortByDigits(array:Array<String>):Array<String>;
+	/**
 		Removes a single item from an array and returns it without creating gc, like the native splice does.
 		Based on code by Mike Reinstein.
 	**/
 	static function SpliceOne(array:Array<Dynamic>, index:Float):Dynamic;
 	/**
-		A stable array sort, because `Array#sort()` is not guaranteed stable.
+		An in-place stable array sort, because `Array#sort()` is not guaranteed stable.
+		
 		This is an implementation of merge sort, without recursion.
+		
+		Function based on the Two-Screen/stable sort 0.1.8 from https://github.com/Two-Screen/stable
 	**/
-	static function StableSort(arr:Array<Dynamic>, comp:haxe.Constraints.Function):Array<Dynamic>;
+	static function StableSort(array:Array<Dynamic>, ?compare:haxe.Constraints.Function):Array<Dynamic>;
 	/**
 		Swaps the position of two elements in the given array.
 		The elements must exist in the same array.

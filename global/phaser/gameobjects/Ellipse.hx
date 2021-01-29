@@ -69,12 +69,6 @@ package global.phaser.gameobjects;
 	**/
 	function setBlendMode(value:ts.AnyOf2<String, global.phaser.BlendModes>):Ellipse;
 	/**
-		Sets the display size of this Game Object.
-		
-		Calling this will adjust the scale.
-	**/
-	function setDisplaySize(width:Float, height:Float):Ellipse;
-	/**
 		The depth of this Game Object within the Scene.
 		
 		The depth is also known as the 'z-index' in some environments, and allows you to change the rendering order
@@ -126,9 +120,48 @@ package global.phaser.gameobjects;
 	**/
 	function updateDisplayOrigin():Ellipse;
 	/**
-		Sets the active WebGL Pipeline of this Game Object.
+		Sets the main WebGL Pipeline of this Game Object.
+		
+		Also sets the `pipelineData` property, if the parameter is given.
+		
+		Both the pipeline and post pipelines share the same pipeline data object.
 	**/
-	function setPipeline(pipelineName:String):Ellipse;
+	function setPipeline(pipeline:ts.AnyOf2<String, global.phaser.renderer.webgl.WebGLPipeline>, ?pipelineData:Dynamic, ?copyData:Bool):Ellipse;
+	/**
+		Sets one, or more, Post Pipelines on this Game Object.
+		
+		Post Pipelines are invoked after this Game Object has rendered to its target and
+		are commonly used for post-fx.
+		
+		The post pipelines are appended to the `postPipelines` array belonging to this
+		Game Object. When the renderer processes this Game Object, it iterates through the post
+		pipelines in the order in which they appear in the array. If you are stacking together
+		multiple effects, be aware that the order is important.
+		
+		If you call this method multiple times, the new pipelines will be appended to any existing
+		post pipelines already set. Use the `resetPostPipeline` method to clear them first, if required.
+		
+		You can optionally also sets the `pipelineData` property, if the parameter is given.
+		
+		Both the pipeline and post pipelines share the pipeline data object together.
+	**/
+	function setPostPipeline(pipelines:ts.AnyOf6<String, haxe.Constraints.Function, Array<haxe.Constraints.Function>, Array<String>, global.phaser.renderer.webgl.pipelines.PostFXPipeline, Array<global.phaser.renderer.webgl.pipelines.PostFXPipeline>>, ?pipelineData:Dynamic, ?copyData:Bool):Ellipse;
+	/**
+		Adds an entry to the `pipelineData` object belonging to this Game Object.
+		
+		If the 'key' already exists, its value is updated. If it doesn't exist, it is created.
+		
+		If `value` is undefined, and `key` exists, `key` is removed from the data object.
+		
+		Both the pipeline and post pipelines share the pipeline data object together.
+	**/
+	function setPipelineData(key:String, ?value:Dynamic):Ellipse;
+	/**
+		Removes a type of Post Pipeline instances from this Game Object, based on the given name, and destroys them.
+		
+		If you wish to remove all Post Pipelines use the `resetPostPipeline` method instead.
+	**/
+	function removePostPipeline(pipeline:ts.AnyOf2<String, global.phaser.renderer.webgl.pipelines.PostFXPipeline>):Ellipse;
 	/**
 		Sets the scroll factor of this Game Object.
 		
@@ -151,6 +184,10 @@ package global.phaser.gameobjects;
 		Sets the position of this Game Object.
 	**/
 	function setPosition(?x:Float, ?y:Float, ?z:Float, ?w:Float):Ellipse;
+	/**
+		Copies an object's coordinates to this Game Object's position.
+	**/
+	function copyPosition(source:ts.AnyOf3<global.phaser.types.math.Vector2Like, global.phaser.types.math.Vector3Like, global.phaser.types.math.Vector4Like>):Ellipse;
 	/**
 		Sets the position of this Game Object to be a random position within the confines of
 		the given area.
@@ -325,7 +362,7 @@ package global.phaser.gameobjects;
 		
 		You can also provide an Input Configuration Object as the only argument to this method.
 	**/
-	function setInteractive(?shape:Dynamic, ?callback:global.phaser.types.input.HitAreaCallback, ?dropZone:Bool):Ellipse;
+	function setInteractive(?hitArea:Dynamic, ?callback:global.phaser.types.input.HitAreaCallback, ?dropZone:Bool):Ellipse;
 	/**
 		If this Game Object has previously been enabled for input, this will disable it.
 		

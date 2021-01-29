@@ -2,7 +2,7 @@ package global.phaser.tilemaps;
 
 /**
 	A class for representing data about about a layer in a map. Maps are parsed from CSV, Tiled,
-	etc. into this format. Tilemap, StaticTilemapLayer and DynamicTilemapLayer have a reference
+	etc. into this format. Tilemap and TilemapLayer objects have a reference
 	to this data and use it to look up and perform operations on tiles.
 **/
 @:native("Phaser.Tilemaps.LayerData") extern class LayerData {
@@ -43,6 +43,10 @@ package global.phaser.tilemaps;
 		The base tile height.
 	**/
 	var baseTileHeight : Float;
+	/**
+		The layers orientation, necessary to be able to determine a tiles pixelX and pixelY as well as the layers width and height.
+	**/
+	var orientation : Orientation;
 	/**
 		The width in pixels of the entire layer.
 	**/
@@ -86,6 +90,11 @@ package global.phaser.tilemaps;
 	/**
 		A reference to the Tilemap layer that owns this data.
 	**/
-	var tilemapLayer : ts.AnyOf2<DynamicTilemapLayer, StaticTilemapLayer>;
+	var tilemapLayer : TilemapLayer;
+	/**
+		The length of the horizontal sides of the hexagon.
+		Only used for hexagonal orientation Tilemaps.
+	**/
+	var hexSideLength : Float;
 	static var prototype : LayerData;
 }

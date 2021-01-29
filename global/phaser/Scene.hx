@@ -129,6 +129,10 @@ package global.phaser;
 	**/
 	var plugins : global.phaser.plugins.PluginManager;
 	/**
+		A reference to the renderer instance Phaser is using, either Canvas or WebGL.
+	**/
+	var renderer : ts.AnyOf2<global.phaser.renderer.canvas.CanvasRenderer, global.phaser.renderer.webgl.WebGLRenderer>;
+	/**
 		Should be overridden by your own Scenes.
 		This method is called once per game step while the scene is running.
 	**/

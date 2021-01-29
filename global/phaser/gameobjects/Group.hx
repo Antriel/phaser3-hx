@@ -7,7 +7,7 @@ package global.phaser.gameobjects;
 	
 	Groups themselves aren't displayable, and can't be positioned, rotated, scaled, or hidden.
 **/
-@:native("Phaser.GameObjects.Group") extern class Group {
+@:native("Phaser.GameObjects.Group") extern class Group extends global.phaser.events.EventEmitter {
 	function new(scene:global.phaser.Scene, ?children:ts.AnyOf3<Array<GameObject>, global.phaser.types.gameobjects.group.GroupConfig, global.phaser.types.gameobjects.group.GroupCreateConfig>, ?config:ts.AnyOf2<global.phaser.types.gameobjects.group.GroupConfig, global.phaser.types.gameobjects.group.GroupCreateConfig>);
 	/**
 		This scene this group belongs to.
@@ -128,6 +128,16 @@ package global.phaser.gameobjects;
 		The number of members of the group.
 	**/
 	function getLength():Float;
+	/**
+		Returns all children in this Group that match the given criteria based on the `property` and `value` arguments.
+		
+		For example: `getAll('visible', true)` would return only children that have their `visible` property set.
+		
+		Optionally, you can specify a start and end index. For example if the Group has 100 elements,
+		and you set `startIndex` to 0 and `endIndex` to 50, it would return matches from only
+		the first 50.
+	**/
+	function getMatching(?property:String, ?value:Dynamic, ?startIndex:Float, ?endIndex:Float):Array<Dynamic>;
 	/**
 		Scans the Group, from top to bottom, for the first member that has an {@link Phaser.GameObjects.GameObject#active} state matching the argument,
 		assigns `x` and `y`, and returns the member.
@@ -335,5 +345,29 @@ package global.phaser.gameobjects;
 		Does not call {@link Phaser.GameObjects.Group#removeCallback}.
 	**/
 	function destroy(?destroyChildren:Bool):Void;
+	/**
+		Add a listener for a given event.
+	**/
+	function on(event:ts.AnyOf2<String, js.lib.Symbol>, fn:haxe.Constraints.Function, ?context:Dynamic):Group;
+	/**
+		Add a listener for a given event.
+	**/
+	function addListener(event:ts.AnyOf2<String, js.lib.Symbol>, fn:haxe.Constraints.Function, ?context:Dynamic):Group;
+	/**
+		Add a one-time listener for a given event.
+	**/
+	function once(event:ts.AnyOf2<String, js.lib.Symbol>, fn:haxe.Constraints.Function, ?context:Dynamic):Group;
+	/**
+		Remove the listeners of a given event.
+	**/
+	function removeListener(event:ts.AnyOf2<String, js.lib.Symbol>, ?fn:haxe.Constraints.Function, ?context:Dynamic, ?once:Bool):Group;
+	/**
+		Remove the listeners of a given event.
+	**/
+	function off(event:ts.AnyOf2<String, js.lib.Symbol>, ?fn:haxe.Constraints.Function, ?context:Dynamic, ?once:Bool):Group;
+	/**
+		Remove all listeners, or those of the specified event.
+	**/
+	function removeAllListeners(?event:ts.AnyOf2<String, js.lib.Symbol>):Group;
 	static var prototype : Group;
 }

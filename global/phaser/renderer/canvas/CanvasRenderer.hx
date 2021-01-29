@@ -1,10 +1,17 @@
 package global.phaser.renderer.canvas;
 
 /**
-	The Canvas Renderer is responsible for managing 2D canvas rendering contexts, including the one used by the Game's canvas. It tracks the internal state of a given context and can renderer textured Game Objects to it, taking into account alpha, blending, and scaling.
+	The Canvas Renderer is responsible for managing 2D canvas rendering contexts,
+	including the one used by the Games canvas. It tracks the internal state of a
+	given context and can renderer textured Game Objects to it, taking into
+	account alpha, blending, and scaling.
 **/
-@:native("Phaser.Renderer.Canvas.CanvasRenderer") extern class CanvasRenderer {
+@:native("Phaser.Renderer.Canvas.CanvasRenderer") extern class CanvasRenderer extends global.phaser.events.EventEmitter {
 	function new(game:global.phaser.Game);
+	/**
+		The local configuration settings of the CanvasRenderer.
+	**/
+	var config : Dynamic;
 	/**
 		The Phaser Game instance that owns this renderer.
 	**/
@@ -25,10 +32,6 @@ package global.phaser.renderer.canvas;
 		The height of the canvas being rendered to.
 	**/
 	var height : Float;
-	/**
-		The local configuration settings of the CanvasRenderer.
-	**/
-	var config : Dynamic;
 	/**
 		The canvas element which the Game uses.
 	**/
@@ -58,13 +61,17 @@ package global.phaser.renderer.canvas;
 	**/
 	var snapshotState : global.phaser.types.renderer.snapshot.SnapshotState;
 	/**
+		Has this renderer fully booted yet?
+	**/
+	var isBooted : Bool;
+	/**
 		Prepares the game canvas for rendering.
 	**/
 	function init():Void;
 	/**
 		The event handler that manages the `resize` event dispatched by the Scale Manager.
 	**/
-	function onResize(gameSize:global.phaser.structs.Size, baseSize:global.phaser.structs.Size, displaySize:global.phaser.structs.Size, ?resolution:Float):Void;
+	function onResize(gameSize:global.phaser.structs.Size, baseSize:global.phaser.structs.Size):Void;
 	/**
 		Resize the main game canvas.
 	**/
@@ -90,9 +97,16 @@ package global.phaser.renderer.canvas;
 	**/
 	function preRender():Void;
 	/**
-		Renders the Scene to the given Camera.
+		The core render step for a Scene Camera.
+		
+		Iterates through the given array of Game Objects and renders them with the given Camera.
+		
+		This is called by the `CameraManager.render` method. The Camera Manager instance belongs to a Scene, and is invoked
+		by the Scene Systems.render method.
+		
+		This method is not called if `Camera.visible` is `false`, or `Camera.alpha` is zero.
 	**/
-	function render(scene:global.phaser.Scene, children:global.phaser.gameobjects.DisplayList, interpolationPercentage:Float, camera:global.phaser.cameras.scene2d.Camera):Void;
+	function render(scene:global.phaser.Scene, children:Array<global.phaser.gameobjects.GameObject>, camera:global.phaser.cameras.scene2d.Camera):Void;
 	/**
 		Restores the game context's global settings and takes a snapshot if one is scheduled.
 		
@@ -150,8 +164,28 @@ package global.phaser.renderer.canvas;
 	**/
 	function batchSprite(sprite:global.phaser.gameobjects.GameObject, frame:global.phaser.textures.Frame, camera:global.phaser.cameras.scene2d.Camera, ?parentTransformMatrix:global.phaser.gameobjects.components.TransformMatrix):Void;
 	/**
-		Destroys all object references in the Canvas Renderer.
+		Add a listener for a given event.
 	**/
-	function destroy():Void;
+	function on(event:ts.AnyOf2<String, js.lib.Symbol>, fn:haxe.Constraints.Function, ?context:Dynamic):CanvasRenderer;
+	/**
+		Add a listener for a given event.
+	**/
+	function addListener(event:ts.AnyOf2<String, js.lib.Symbol>, fn:haxe.Constraints.Function, ?context:Dynamic):CanvasRenderer;
+	/**
+		Add a one-time listener for a given event.
+	**/
+	function once(event:ts.AnyOf2<String, js.lib.Symbol>, fn:haxe.Constraints.Function, ?context:Dynamic):CanvasRenderer;
+	/**
+		Remove the listeners of a given event.
+	**/
+	function removeListener(event:ts.AnyOf2<String, js.lib.Symbol>, ?fn:haxe.Constraints.Function, ?context:Dynamic, ?once:Bool):CanvasRenderer;
+	/**
+		Remove the listeners of a given event.
+	**/
+	function off(event:ts.AnyOf2<String, js.lib.Symbol>, ?fn:haxe.Constraints.Function, ?context:Dynamic, ?once:Bool):CanvasRenderer;
+	/**
+		Remove all listeners, or those of the specified event.
+	**/
+	function removeAllListeners(?event:ts.AnyOf2<String, js.lib.Symbol>):CanvasRenderer;
 	static var prototype : CanvasRenderer;
 }

@@ -26,6 +26,8 @@ package global.phaser.display.masks;
 	/**
 		Similar to the BitmapMasks invertAlpha setting this to true will then hide all pixels
 		drawn to the Geometry Mask.
+		
+		This is a WebGL only feature.
 	**/
 	var invertAlpha : Bool;
 	/**
@@ -38,7 +40,10 @@ package global.phaser.display.masks;
 	function setShape(graphicsGeometry:global.phaser.gameobjects.Graphics):GeometryMask;
 	/**
 		Sets the `invertAlpha` property of this Geometry Mask.
+		
 		Inverting the alpha essentially flips the way the mask works.
+		
+		This is a WebGL only feature.
 	**/
 	function setInvertAlpha(?value:Bool):GeometryMask;
 	/**

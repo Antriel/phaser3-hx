@@ -20,6 +20,11 @@ typedef TextStyle = {
 	@:optional
 	var fontStyle : String;
 	/**
+		The font family or font settings to set. Overrides the other font settings.
+	**/
+	@:optional
+	var font : String;
+	/**
 		A solid fill color that is rendered behind the Text object. Given as a CSS string color such as `#ff0`.
 	**/
 	@:optional

@@ -109,8 +109,13 @@ package global.phaser.tweens;
 	function getGlobalTimeScale():Float;
 	/**
 		Returns an array of all Tweens or Timelines in the Tween Manager which affect the given target or array of targets.
+		
+		Only the currently active tweens are tested. A tween that has completed and is
+		awaiting removal will not be included in the results.
+		
+		If you wish to also search pending tweens, use the `includePending` flag.
 	**/
-	function getTweensOf(target:ts.AnyOf2<Dynamic, Array<Dynamic>>):Array<Tween>;
+	function getTweensOf(target:ts.AnyOf2<Dynamic, Array<Dynamic>>, ?includePending:Bool):Array<Tween>;
 	/**
 		Checks if the given object is being affected by a playing Tween.
 	**/

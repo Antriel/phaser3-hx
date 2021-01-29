@@ -28,6 +28,280 @@ package global.phaser.loader;
 @:native("Phaser.Loader.LoaderPlugin") extern class LoaderPlugin extends global.phaser.events.EventEmitter {
 	function new(scene:global.phaser.Scene);
 	/**
+		The Scene which owns this Loader instance.
+	**/
+	var scene : global.phaser.Scene;
+	/**
+		A reference to the Scene Systems.
+	**/
+	var systems : global.phaser.scenes.Systems;
+	/**
+		A reference to the global Cache Manager.
+	**/
+	var cacheManager : global.phaser.cache.CacheManager;
+	/**
+		A reference to the global Texture Manager.
+	**/
+	var textureManager : global.phaser.textures.TextureManager;
+	/**
+		A reference to the global Scene Manager.
+	**/
+	private var sceneManager : global.phaser.scenes.SceneManager;
+	/**
+		An optional prefix that is automatically prepended to the start of every file key.
+		If prefix was `MENU.` and you load an image with the key 'Background' the resulting key would be `MENU.Background`.
+		You can set this directly, or call `Loader.setPrefix()`. It will then affect every file added to the Loader
+		from that point on. It does _not_ change any file already in the load queue.
+	**/
+	var prefix : String;
+	/**
+		The value of `path`, if set, is placed before any _relative_ file path given. For example:
+		
+		```javascript
+		this.load.path = "images/sprites/";
+		this.load.image("ball", "ball.png");
+		this.load.image("tree", "level1/oaktree.png");
+		this.load.image("boom", "http://server.com/explode.png");
+		```
+		
+		Would load the `ball` file from `images/sprites/ball.png` and the tree from
+		`images/sprites/level1/oaktree.png` but the file `boom` would load from the URL
+		given as it's an absolute URL.
+		
+		Please note that the path is added before the filename but *after* the baseURL (if set.)
+		
+		If you set this property directly then it _must_ end with a "/". Alternatively, call `setPath()` and it'll do it for you.
+	**/
+	var path : String;
+	/**
+		If you want to append a URL before the path of any asset you can set this here.
+		
+		Useful if allowing the asset base url to be configured outside of the game code.
+		
+		If you set this property directly then it _must_ end with a "/". Alternatively, call `setBaseURL()` and it'll do it for you.
+	**/
+	var baseURL : String;
+	/**
+		The number of concurrent / parallel resources to try and fetch at once.
+		
+		Old browsers limit 6 requests per domain; modern ones, especially those with HTTP/2 don't limit it at all.
+		
+		The default is 32 but you can change this in your Game Config, or by changing this property before the Loader starts.
+	**/
+	var maxParallelDownloads : Float;
+	/**
+		xhr specific global settings (can be overridden on a per-file basis)
+	**/
+	var xhr : global.phaser.types.loader.XHRSettingsObject;
+	/**
+		The crossOrigin value applied to loaded images. Very often this needs to be set to 'anonymous'.
+	**/
+	var crossOrigin : String;
+	/**
+		The total number of files to load. It may not always be accurate because you may add to the Loader during the process
+		of loading, especially if you load a Pack File. Therefore this value can change, but in most cases remains static.
+	**/
+	var totalToLoad : Float;
+	/**
+		The progress of the current load queue, as a float value between 0 and 1.
+		This is updated automatically as files complete loading.
+		Note that it is possible for this value to go down again if you add content to the current load queue during a load.
+	**/
+	var progress : Float;
+	/**
+		Files are placed in this Set when they're added to the Loader via `addFile`.
+		
+		They are moved to the `inflight` Set when they start loading, and assuming a successful
+		load, to the `queue` Set for further processing.
+		
+		By the end of the load process this Set will be empty.
+	**/
+	var list : global.phaser.structs.Set<File>;
+	/**
+		Files are stored in this Set while they're in the process of being loaded.
+		
+		Upon a successful load they are moved to the `queue` Set.
+		
+		By the end of the load process this Set will be empty.
+	**/
+	var inflight : global.phaser.structs.Set<File>;
+	/**
+		Files are stored in this Set while they're being processed.
+		
+		If the process is successful they are moved to their final destination, which could be
+		a Cache or the Texture Manager.
+		
+		At the end of the load process this Set will be empty.
+	**/
+	var queue : global.phaser.structs.Set<File>;
+	/**
+		The total number of files that failed to load during the most recent load.
+		This value is reset when you call `Loader.start`.
+	**/
+	var totalFailed : Float;
+	/**
+		The total number of files that successfully loaded during the most recent load.
+		This value is reset when you call `Loader.start`.
+	**/
+	var totalComplete : Float;
+	/**
+		The current state of the Loader.
+	**/
+	final state : Float;
+	/**
+		If you want to append a URL before the path of any asset you can set this here.
+		
+		Useful if allowing the asset base url to be configured outside of the game code.
+		
+		Once a base URL is set it will affect every file loaded by the Loader from that point on. It does _not_ change any
+		file _already_ being loaded. To reset it, call this method with no arguments.
+	**/
+	function setBaseURL(?url:String):LoaderPlugin;
+	/**
+		The value of `path`, if set, is placed before any _relative_ file path given. For example:
+		
+		```javascript
+		this.load.setPath("images/sprites/");
+		this.load.image("ball", "ball.png");
+		this.load.image("tree", "level1/oaktree.png");
+		this.load.image("boom", "http://server.com/explode.png");
+		```
+		
+		Would load the `ball` file from `images/sprites/ball.png` and the tree from
+		`images/sprites/level1/oaktree.png` but the file `boom` would load from the URL
+		given as it's an absolute URL.
+		
+		Please note that the path is added before the filename but *after* the baseURL (if set.)
+		
+		Once a path is set it will then affect every file added to the Loader from that point on. It does _not_ change any
+		file _already_ in the load queue. To reset it, call this method with no arguments.
+	**/
+	function setPath(?path:String):LoaderPlugin;
+	/**
+		An optional prefix that is automatically prepended to the start of every file key.
+		
+		If prefix was `MENU.` and you load an image with the key 'Background' the resulting key would be `MENU.Background`.
+		
+		Once a prefix is set it will then affect every file added to the Loader from that point on. It does _not_ change any
+		file _already_ in the load queue. To reset it, call this method with no arguments.
+	**/
+	function setPrefix(?prefix:String):LoaderPlugin;
+	/**
+		Sets the Cross Origin Resource Sharing value used when loading files.
+		
+		Files can override this value on a per-file basis by specifying an alternative `crossOrigin` value in their file config.
+		
+		Once CORs is set it will then affect every file loaded by the Loader from that point on, as long as they don't have
+		their own CORs setting. To reset it, call this method with no arguments.
+		
+		For more details about CORs see https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
+	**/
+	function setCORS(?crossOrigin:String):LoaderPlugin;
+	/**
+		Adds a file, or array of files, into the load queue.
+		
+		The file must be an instance of `Phaser.Loader.File`, or a class that extends it. The Loader will check that the key
+		used by the file won't conflict with any other key either in the loader, the inflight queue or the target cache.
+		If allowed it will then add the file into the pending list, read for the load to start. Or, if the load has already
+		started, ready for the next batch of files to be pulled from the list to the inflight queue.
+		
+		You should not normally call this method directly, but rather use one of the Loader methods like `image` or `atlas`,
+		however you can call this as long as the file given to it is well formed.
+	**/
+	function addFile(file:ts.AnyOf2<File, Array<File>>):Void;
+	/**
+		Checks the key and type of the given file to see if it will conflict with anything already
+		in a Cache, the Texture Manager, or the list or inflight queues.
+	**/
+	function keyExists(file:File):Bool;
+	/**
+		Takes a well formed, fully parsed pack file object and adds its entries into the load queue. Usually you do not call
+		this method directly, but instead use `Loader.pack` and supply a path to a JSON file that holds the
+		pack data. However, if you've got the data prepared you can pass it to this method.
+		
+		You can also provide an optional key. If you do then it will only add the entries from that part of the pack into
+		to the load queue. If not specified it will add all entries it finds. For more details about the pack file format
+		see the `LoaderPlugin.pack` method.
+	**/
+	function addPack(pack:Dynamic, ?packKey:String):Bool;
+	/**
+		Is the Loader actively loading, or processing loaded files?
+	**/
+	function isLoading():Bool;
+	/**
+		Is the Loader ready to start a new load?
+	**/
+	function isReady():Bool;
+	/**
+		Starts the Loader running. This will reset the progress and totals and then emit a `start` event.
+		If there is nothing in the queue the Loader will immediately complete, otherwise it will start
+		loading the first batch of files.
+		
+		The Loader is started automatically if the queue is populated within your Scenes `preload` method.
+		
+		However, outside of this, you need to call this method to start it.
+		
+		If the Loader is already running this method will simply return.
+	**/
+	function start():Void;
+	/**
+		Called automatically during the load process.
+		It updates the `progress` value and then emits a progress event, which you can use to
+		display a loading bar in your game.
+	**/
+	function updateProgress():Void;
+	/**
+		Called automatically during the load process.
+	**/
+	function update():Void;
+	/**
+		An internal method called automatically by the XHRLoader belong to a File.
+		
+		This method will remove the given file from the inflight Set and update the load progress.
+		If the file was successful its `onProcess` method is called, otherwise it is added to the delete queue.
+	**/
+	function nextFile(file:File, success:Bool):Void;
+	/**
+		An internal method that is called automatically by the File when it has finished processing.
+		
+		If the process was successful, and the File isn't part of a MultiFile, its `addToCache` method is called.
+		
+		It this then removed from the queue. If there are no more files to load `loadComplete` is called.
+	**/
+	function fileProcessComplete(file:File):Void;
+	/**
+		Called at the end when the load queue is exhausted and all files have either loaded or errored.
+		By this point every loaded file will now be in its associated cache and ready for use.
+		
+		Also clears down the Sets, puts progress to 1 and clears the deletion queue.
+	**/
+	function loadComplete():Void;
+	/**
+		Adds a File into the pending-deletion queue.
+	**/
+	function flagForRemoval(file:File):Void;
+	/**
+		Converts the given JSON data into a file that the browser then prompts you to download so you can save it locally.
+		
+		The data must be well formed JSON and ready-parsed, not a JavaScript object.
+	**/
+	function saveJSON(data:Dynamic, ?filename:String):LoaderPlugin;
+	/**
+		Causes the browser to save the given data as a file to its default Downloads folder.
+		
+		Creates a DOM level anchor link, assigns it as being a `download` anchor, sets the href
+		to be an ObjectURL based on the given data, and then invokes a click event.
+	**/
+	function save(data:Dynamic, ?filename:String, ?filetype:String):LoaderPlugin;
+	/**
+		Resets the Loader.
+		
+		This will clear all lists and reset the base URL, path and prefix.
+		
+		Warning: If the Loader is currently downloading files, or has files in its queue, they will be aborted.
+	**/
+	function reset():Void;
+	/**
 		Adds an Animation JSON Data file, or array of Animation JSON files, to the current load queue.
 		
 		You can call this method from within your Scene's `preload`, along with any other files you wish to load:
@@ -114,6 +388,121 @@ package global.phaser.loader;
 		It is available in the default build but can be excluded from custom builds.
 	**/
 	function animation(key:ts.AnyOf3<String, global.phaser.types.loader.filetypes.JSONFileConfig, Array<global.phaser.types.loader.filetypes.JSONFileConfig>>, ?url:String, ?dataKey:String, ?xhrSettings:global.phaser.types.loader.XHRSettingsObject):LoaderPlugin;
+	/**
+		Aseprite is a powerful animated sprite editor and pixel art tool.
+		
+		You can find more details at https://www.aseprite.org/
+		
+		Adds a JSON based Aseprite Animation, or array of animations, to the current load queue.
+		
+		You can call this method from within your Scene's `preload`, along with any other files you wish to load:
+		
+		```javascript
+		function preload ()
+		{
+		     this.load.aseprite('gladiator', 'images/Gladiator.png', 'images/Gladiator.json');
+		}
+		```
+		
+		The file is **not** loaded right away. It is added to a queue ready to be loaded either when the loader starts,
+		or if it's already running, when the next free load slot becomes available. This happens automatically if you
+		are calling this from within the Scene's `preload` method, or a related callback. Because the file is queued
+		it means you cannot use the file immediately after calling this method, but must wait for the file to complete.
+		The typical flow for a Phaser Scene is that you load assets in the Scene's `preload` method and then when the
+		Scene's `create` method is called you are guaranteed that all of those assets are ready for use and have been
+		loaded.
+		
+		If you call this from outside of `preload` then you are responsible for starting the Loader afterwards and monitoring
+		its events to know when it's safe to use the asset. Please see the Phaser.Loader.LoaderPlugin class for more details.
+		
+		To export a compatible JSON file in Aseprite, please do the following:
+		
+		1. Go to "File - Export Sprite Sheet"
+		
+		2. On the **Layout** tab:
+		2a. Set the "Sheet type" to "Packed"
+		2b. Set the "Constraints" to "None"
+		2c. Check the "Merge Duplicates" checkbox
+		
+		3. On the **Sprite** tab:
+		3a. Set "Layers" to "Visible layers"
+		3b. Set "Frames" to "All frames", unless you only wish to export a sub-set of tags
+		
+		4. On the **Borders** tab:
+		4a. Check the "Trim Sprite" and "Trim Cells" options
+		4b. Ensure "Border Padding", "Spacing" and "Inner Padding" are all > 0 (1 is usually enough)
+		
+		5. On the **Output** tab:
+		5a. Check "Output File", give your image a name and make sure you choose "png files" as the file type
+		5b. Check "JSON Data" and give your json file a name
+		5c. The JSON Data type can be either a Hash or Array, Phaser doesn't mind.
+		5d. Make sure "Tags" is checked in the Meta options
+		5e. In the "Item Filename" input box, make sure it says just "{frame}" and nothing more.
+		
+		6. Click export
+		
+		This was tested with Aseprite 1.2.25.
+		
+		This will export a png and json file which you can load using the Aseprite Loader, i.e.:
+		
+		Phaser can load all common image types: png, jpg, gif and any other format the browser can natively handle.
+		
+		The key must be a unique String. It is used to add the file to the global Texture Manager upon a successful load.
+		The key should be unique both in terms of files being loaded and files already present in the Texture Manager.
+		Loading a file using a key that is already taken will result in a warning. If you wish to replace an existing file
+		then remove it from the Texture Manager first, before loading a new one.
+		
+		Instead of passing arguments you can pass a configuration object, such as:
+		
+		```javascript
+		this.load.aseprite({
+		     key: 'gladiator',
+		     textureURL: 'images/Gladiator.png',
+		     atlasURL: 'images/Gladiator.json'
+		});
+		```
+		
+		See the documentation for `Phaser.Types.Loader.FileTypes.AsepriteFileConfig` for more details.
+		
+		Instead of passing a URL for the JSON data you can also pass in a well formed JSON object instead.
+		
+		Once loaded, you can call this method from within a Scene with the 'atlas' key:
+		
+		```javascript
+		this.anims.createFromAseprite('paladin');
+		```
+		
+		Any animations defined in the JSON will now be available to use in Phaser and you play them
+		via their Tag name. For example, if you have an animation called 'War Cry' on your Aseprite timeline,
+		you can play it in Phaser using that Tag name:
+		
+		```javascript
+		this.add.sprite(400, 300).play('War Cry');
+		```
+		
+		When calling this method you can optionally provide an array of tag names, and only those animations
+		will be created. For example:
+		
+		```javascript
+		this.anims.createFromAseprite('paladin', [ 'step', 'War Cry', 'Magnum Break' ]);
+		```
+		
+		This will only create the 3 animations defined. Note that the tag names are case-sensitive.
+		
+		If you have specified a prefix in the loader, via `Loader.setPrefix` then this value will be prepended to this files
+		key. For example, if the prefix was `MENU.` and the key was `Background` the final key will be `MENU.Background` and
+		this is what you would use to retrieve the image from the Texture Manager.
+		
+		The URL can be relative or absolute. If the URL is relative the `Loader.baseURL` and `Loader.path` values will be prepended to it.
+		
+		If the URL isn't specified the Loader will take the key and create a filename from that. For example if the key is "alien"
+		and no URL is given then the Loader will set the URL to be "alien.png". It will always add `.png` as the extension, although
+		this can be overridden if using an object instead of method arguments. If you do not desire this action then provide a URL.
+		
+		Note: The ability to load this type of file will only be available if the Aseprite File type has been built into Phaser.
+		It is available in the default build but can be excluded from custom builds.
+	**/
+	function aseprite(key:ts.AnyOf3<String, global.phaser.types.loader.filetypes.AsepriteFileConfig, Array<global.phaser.types.loader.filetypes.AsepriteFileConfig>>, ?textureURL:ts.AnyOf2<String, Array<String>>, ?atlasURL:ts.AnyOf2<String, Dynamic>, ?textureXhrSettings:global.phaser.types.loader.XHRSettingsObject, ?atlasXhrSettings:global.phaser.types.loader.XHRSettingsObject):LoaderPlugin;
 	/**
 		Adds a JSON based Texture Atlas, or array of atlases, to the current load queue.
 		
@@ -1112,6 +1501,79 @@ package global.phaser.loader;
 	**/
 	function scripts(key:ts.AnyOf3<String, global.phaser.types.loader.filetypes.MultiScriptFileConfig, Array<global.phaser.types.loader.filetypes.MultiScriptFileConfig>>, ?url:Array<String>, ?extension:String, ?xhrSettings:global.phaser.types.loader.XHRSettingsObject):LoaderPlugin;
 	/**
+		Adds a Wavefront OBJ file, or array of OBJ files, to the current load queue.
+		
+		Note: You should ensure your 3D package has triangulated the OBJ file prior to export.
+		
+		You can call this method from within your Scene's `preload`, along with any other files you wish to load:
+		
+		```javascript
+		function preload ()
+		{
+		     this.load.obj('ufo', 'files/spaceship.obj');
+		}
+		```
+		
+		You can optionally also load a Wavefront Material file as well, by providing the 3rd parameter:
+		
+		```javascript
+		function preload ()
+		{
+		     this.load.obj('ufo', 'files/spaceship.obj', 'files/spaceship.mtl');
+		}
+		```
+		
+		If given, the material will be parsed and stored along with the obj data in the cache.
+		
+		The file is **not** loaded right away. It is added to a queue ready to be loaded either when the loader starts,
+		or if it's already running, when the next free load slot becomes available. This happens automatically if you
+		are calling this from within the Scene's `preload` method, or a related callback. Because the file is queued
+		it means you cannot use the file immediately after calling this method, but must wait for the file to complete.
+		The typical flow for a Phaser Scene is that you load assets in the Scene's `preload` method and then when the
+		Scene's `create` method is called you are guaranteed that all of those assets are ready for use and have been
+		loaded.
+		
+		The key must be a unique String. It is used to add the file to the global OBJ Cache upon a successful load.
+		The key should be unique both in terms of files being loaded and files already present in the OBJ Cache.
+		Loading a file using a key that is already taken will result in a warning. If you wish to replace an existing file
+		then remove it from the OBJ Cache first, before loading a new one.
+		
+		Instead of passing arguments you can pass a configuration object, such as:
+		
+		```javascript
+		this.load.obj({
+		     key: 'ufo',
+		     url: 'files/spaceship.obj',
+		     matURL: 'files/spaceship.mtl',
+		     flipUV: true
+		});
+		```
+		
+		See the documentation for `Phaser.Types.Loader.FileTypes.OBJFileConfig` for more details.
+		
+		Once the file has finished loading you can access it from its Cache using its key:
+		
+		```javascript
+		this.load.obj('ufo', 'files/spaceship.obj');
+		// and later in your game ...
+		var data = this.cache.obj.get('ufo');
+		```
+		
+		If you have specified a prefix in the loader, via `Loader.setPrefix` then this value will be prepended to this files
+		key. For example, if the prefix was `LEVEL1.` and the key was `Story` the final key will be `LEVEL1.Story` and
+		this is what you would use to retrieve the obj from the OBJ Cache.
+		
+		The URL can be relative or absolute. If the URL is relative the `Loader.baseURL` and `Loader.path` values will be prepended to it.
+		
+		If the URL isn't specified the Loader will take the key and create a filename from that. For example if the key is "story"
+		and no URL is given then the Loader will set the URL to be "story.obj". It will always add `.obj` as the extension, although
+		this can be overridden if using an object instead of method arguments. If you do not desire this action then provide a URL.
+		
+		Note: The ability to load this type of file will only be available if the OBJ File type has been built into Phaser.
+		It is available in the default build but can be excluded from custom builds.
+	**/
+	function obj(key:ts.AnyOf3<String, global.phaser.types.loader.filetypes.OBJFileConfig, Array<global.phaser.types.loader.filetypes.OBJFileConfig>>, ?objURL:String, ?matURL:String, ?flipUV:Bool, ?xhrSettings:global.phaser.types.loader.XHRSettingsObject):LoaderPlugin;
+	/**
 		Adds a JSON File Pack, or array of packs, to the current load queue.
 		
 		You can call this method from within your Scene's `preload`, along with any other files you wish to load:
@@ -1268,6 +1730,113 @@ package global.phaser.loader;
 		It is available in the default build but can be excluded from custom builds.
 	**/
 	function plugin(key:ts.AnyOf3<String, global.phaser.types.loader.filetypes.PluginFileConfig, Array<global.phaser.types.loader.filetypes.PluginFileConfig>>, ?url:ts.AnyOf2<String, haxe.Constraints.Function>, ?start:Bool, ?mapping:String, ?xhrSettings:global.phaser.types.loader.XHRSettingsObject):LoaderPlugin;
+	/**
+		Adds an SVG File, or array of SVG Files, to the current load queue. When the files are loaded they
+		will be rendered to bitmap textures and stored in the Texture Manager.
+		
+		You can call this method from within your Scene's `preload`, along with any other files you wish to load:
+		
+		```javascript
+		function preload ()
+		{
+		     this.load.svg('morty', 'images/Morty.svg');
+		}
+		```
+		
+		The file is **not** loaded right away. It is added to a queue ready to be loaded either when the loader starts,
+		or if it's already running, when the next free load slot becomes available. This happens automatically if you
+		are calling this from within the Scene's `preload` method, or a related callback. Because the file is queued
+		it means you cannot use the file immediately after calling this method, but must wait for the file to complete.
+		The typical flow for a Phaser Scene is that you load assets in the Scene's `preload` method and then when the
+		Scene's `create` method is called you are guaranteed that all of those assets are ready for use and have been
+		loaded.
+		
+		The key must be a unique String. It is used to add the file to the global Texture Manager upon a successful load.
+		The key should be unique both in terms of files being loaded and files already present in the Texture Manager.
+		Loading a file using a key that is already taken will result in a warning. If you wish to replace an existing file
+		then remove it from the Texture Manager first, before loading a new one.
+		
+		Instead of passing arguments you can pass a configuration object, such as:
+		
+		```javascript
+		this.load.svg({
+		     key: 'morty',
+		     url: 'images/Morty.svg'
+		});
+		```
+		
+		See the documentation for `Phaser.Types.Loader.FileTypes.SVGFileConfig` for more details.
+		
+		Once the file has finished loading you can use it as a texture for a Game Object by referencing its key:
+		
+		```javascript
+		this.load.svg('morty', 'images/Morty.svg');
+		// and later in your game ...
+		this.add.image(x, y, 'morty');
+		```
+		
+		If you have specified a prefix in the loader, via `Loader.setPrefix` then this value will be prepended to this files
+		key. For example, if the prefix was `MENU.` and the key was `Background` the final key will be `MENU.Background` and
+		this is what you would use to retrieve the image from the Texture Manager.
+		
+		The URL can be relative or absolute. If the URL is relative the `Loader.baseURL` and `Loader.path` values will be prepended to it.
+		
+		If the URL isn't specified the Loader will take the key and create a filename from that. For example if the key is "alien"
+		and no URL is given then the Loader will set the URL to be "alien.html". It will always add `.html` as the extension, although
+		this can be overridden if using an object instead of method arguments. If you do not desire this action then provide a URL.
+		
+		You can optionally pass an SVG Resize Configuration object when you load an SVG file. By default the SVG will be rendered to a texture
+		at the same size defined in the SVG file attributes. However, this isn't always desirable. You may wish to resize the SVG (either down
+		or up) to improve texture clarity, or reduce texture memory consumption. You can either specify an exact width and height to resize
+		the SVG to:
+		
+		```javascript
+		function preload ()
+		{
+		     this.load.svg('morty', 'images/Morty.svg', { width: 300, height: 600 });
+		}
+		```
+		
+		Or when using a configuration object:
+		
+		```javascript
+		this.load.svg({
+		     key: 'morty',
+		     url: 'images/Morty.svg',
+		     svgConfig: {
+		         width: 300,
+		         height: 600
+		     }
+		});
+		```
+		
+		Alternatively, you can just provide a scale factor instead:
+		
+		```javascript
+		function preload ()
+		{
+		     this.load.svg('morty', 'images/Morty.svg', { scale: 2.5 });
+		}
+		```
+		
+		Or when using a configuration object:
+		
+		```javascript
+		this.load.svg({
+		     key: 'morty',
+		     url: 'images/Morty.svg',
+		     svgConfig: {
+		         scale: 2.5
+		     }
+		});
+		```
+		
+		If scale, width and height values are all given, the scale has priority and the width and height values are ignored.
+		
+		Note: The ability to load this type of file will only be available if the SVG File type has been built into Phaser.
+		It is available in the default build but can be excluded from custom builds.
+	**/
+	function svg(key:ts.AnyOf3<String, global.phaser.types.loader.filetypes.SVGFileConfig, Array<global.phaser.types.loader.filetypes.SVGFileConfig>>, ?url:String, ?svgConfig:global.phaser.types.loader.filetypes.SVGSizeConfig, ?xhrSettings:global.phaser.types.loader.XHRSettingsObject):LoaderPlugin;
 	/**
 		Adds an external Scene file, or array of Scene files, to the current load queue.
 		
@@ -1548,113 +2117,6 @@ package global.phaser.loader;
 		It is available in the default build but can be excluded from custom builds.
 	**/
 	function spritesheet(key:ts.AnyOf3<String, global.phaser.types.loader.filetypes.SpriteSheetFileConfig, Array<global.phaser.types.loader.filetypes.SpriteSheetFileConfig>>, ?url:String, ?frameConfig:global.phaser.types.loader.filetypes.ImageFrameConfig, ?xhrSettings:global.phaser.types.loader.XHRSettingsObject):LoaderPlugin;
-	/**
-		Adds an SVG File, or array of SVG Files, to the current load queue. When the files are loaded they
-		will be rendered to bitmap textures and stored in the Texture Manager.
-		
-		You can call this method from within your Scene's `preload`, along with any other files you wish to load:
-		
-		```javascript
-		function preload ()
-		{
-		     this.load.svg('morty', 'images/Morty.svg');
-		}
-		```
-		
-		The file is **not** loaded right away. It is added to a queue ready to be loaded either when the loader starts,
-		or if it's already running, when the next free load slot becomes available. This happens automatically if you
-		are calling this from within the Scene's `preload` method, or a related callback. Because the file is queued
-		it means you cannot use the file immediately after calling this method, but must wait for the file to complete.
-		The typical flow for a Phaser Scene is that you load assets in the Scene's `preload` method and then when the
-		Scene's `create` method is called you are guaranteed that all of those assets are ready for use and have been
-		loaded.
-		
-		The key must be a unique String. It is used to add the file to the global Texture Manager upon a successful load.
-		The key should be unique both in terms of files being loaded and files already present in the Texture Manager.
-		Loading a file using a key that is already taken will result in a warning. If you wish to replace an existing file
-		then remove it from the Texture Manager first, before loading a new one.
-		
-		Instead of passing arguments you can pass a configuration object, such as:
-		
-		```javascript
-		this.load.svg({
-		     key: 'morty',
-		     url: 'images/Morty.svg'
-		});
-		```
-		
-		See the documentation for `Phaser.Types.Loader.FileTypes.SVGFileConfig` for more details.
-		
-		Once the file has finished loading you can use it as a texture for a Game Object by referencing its key:
-		
-		```javascript
-		this.load.svg('morty', 'images/Morty.svg');
-		// and later in your game ...
-		this.add.image(x, y, 'morty');
-		```
-		
-		If you have specified a prefix in the loader, via `Loader.setPrefix` then this value will be prepended to this files
-		key. For example, if the prefix was `MENU.` and the key was `Background` the final key will be `MENU.Background` and
-		this is what you would use to retrieve the image from the Texture Manager.
-		
-		The URL can be relative or absolute. If the URL is relative the `Loader.baseURL` and `Loader.path` values will be prepended to it.
-		
-		If the URL isn't specified the Loader will take the key and create a filename from that. For example if the key is "alien"
-		and no URL is given then the Loader will set the URL to be "alien.html". It will always add `.html` as the extension, although
-		this can be overridden if using an object instead of method arguments. If you do not desire this action then provide a URL.
-		
-		You can optionally pass an SVG Resize Configuration object when you load an SVG file. By default the SVG will be rendered to a texture
-		at the same size defined in the SVG file attributes. However, this isn't always desirable. You may wish to resize the SVG (either down
-		or up) to improve texture clarity, or reduce texture memory consumption. You can either specify an exact width and height to resize
-		the SVG to:
-		
-		```javascript
-		function preload ()
-		{
-		     this.load.svg('morty', 'images/Morty.svg', { width: 300, height: 600 });
-		}
-		```
-		
-		Or when using a configuration object:
-		
-		```javascript
-		this.load.svg({
-		     key: 'morty',
-		     url: 'images/Morty.svg',
-		     svgConfig: {
-		         width: 300,
-		         height: 600
-		     }
-		});
-		```
-		
-		Alternatively, you can just provide a scale factor instead:
-		
-		```javascript
-		function preload ()
-		{
-		     this.load.svg('morty', 'images/Morty.svg', { scale: 2.5 });
-		}
-		```
-		
-		Or when using a configuration object:
-		
-		```javascript
-		this.load.svg({
-		     key: 'morty',
-		     url: 'images/Morty.svg',
-		     svgConfig: {
-		         scale: 2.5
-		     }
-		});
-		```
-		
-		If scale, width and height values are all given, the scale has priority and the width and height values are ignored.
-		
-		Note: The ability to load this type of file will only be available if the SVG File type has been built into Phaser.
-		It is available in the default build but can be excluded from custom builds.
-	**/
-	function svg(key:ts.AnyOf3<String, global.phaser.types.loader.filetypes.SVGFileConfig, Array<global.phaser.types.loader.filetypes.SVGFileConfig>>, ?url:String, ?svgConfig:global.phaser.types.loader.filetypes.SVGSizeConfig, ?xhrSettings:global.phaser.types.loader.XHRSettingsObject):LoaderPlugin;
 	/**
 		Adds a Text file, or array of Text files, to the current load queue.
 		
@@ -2091,280 +2553,6 @@ package global.phaser.loader;
 		It is available in the default build but can be excluded from custom builds.
 	**/
 	function xml(key:ts.AnyOf3<String, global.phaser.types.loader.filetypes.XMLFileConfig, Array<global.phaser.types.loader.filetypes.XMLFileConfig>>, ?url:String, ?xhrSettings:global.phaser.types.loader.XHRSettingsObject):LoaderPlugin;
-	/**
-		The Scene which owns this Loader instance.
-	**/
-	var scene : global.phaser.Scene;
-	/**
-		A reference to the Scene Systems.
-	**/
-	var systems : global.phaser.scenes.Systems;
-	/**
-		A reference to the global Cache Manager.
-	**/
-	var cacheManager : global.phaser.cache.CacheManager;
-	/**
-		A reference to the global Texture Manager.
-	**/
-	var textureManager : global.phaser.textures.TextureManager;
-	/**
-		A reference to the global Scene Manager.
-	**/
-	private var sceneManager : global.phaser.scenes.SceneManager;
-	/**
-		An optional prefix that is automatically prepended to the start of every file key.
-		If prefix was `MENU.` and you load an image with the key 'Background' the resulting key would be `MENU.Background`.
-		You can set this directly, or call `Loader.setPrefix()`. It will then affect every file added to the Loader
-		from that point on. It does _not_ change any file already in the load queue.
-	**/
-	var prefix : String;
-	/**
-		The value of `path`, if set, is placed before any _relative_ file path given. For example:
-		
-		```javascript
-		this.load.path = "images/sprites/";
-		this.load.image("ball", "ball.png");
-		this.load.image("tree", "level1/oaktree.png");
-		this.load.image("boom", "http://server.com/explode.png");
-		```
-		
-		Would load the `ball` file from `images/sprites/ball.png` and the tree from
-		`images/sprites/level1/oaktree.png` but the file `boom` would load from the URL
-		given as it's an absolute URL.
-		
-		Please note that the path is added before the filename but *after* the baseURL (if set.)
-		
-		If you set this property directly then it _must_ end with a "/". Alternatively, call `setPath()` and it'll do it for you.
-	**/
-	var path : String;
-	/**
-		If you want to append a URL before the path of any asset you can set this here.
-		
-		Useful if allowing the asset base url to be configured outside of the game code.
-		
-		If you set this property directly then it _must_ end with a "/". Alternatively, call `setBaseURL()` and it'll do it for you.
-	**/
-	var baseURL : String;
-	/**
-		The number of concurrent / parallel resources to try and fetch at once.
-		
-		Old browsers limit 6 requests per domain; modern ones, especially those with HTTP/2 don't limit it at all.
-		
-		The default is 32 but you can change this in your Game Config, or by changing this property before the Loader starts.
-	**/
-	var maxParallelDownloads : Float;
-	/**
-		xhr specific global settings (can be overridden on a per-file basis)
-	**/
-	var xhr : global.phaser.types.loader.XHRSettingsObject;
-	/**
-		The crossOrigin value applied to loaded images. Very often this needs to be set to 'anonymous'.
-	**/
-	var crossOrigin : String;
-	/**
-		The total number of files to load. It may not always be accurate because you may add to the Loader during the process
-		of loading, especially if you load a Pack File. Therefore this value can change, but in most cases remains static.
-	**/
-	var totalToLoad : Float;
-	/**
-		The progress of the current load queue, as a float value between 0 and 1.
-		This is updated automatically as files complete loading.
-		Note that it is possible for this value to go down again if you add content to the current load queue during a load.
-	**/
-	var progress : Float;
-	/**
-		Files are placed in this Set when they're added to the Loader via `addFile`.
-		
-		They are moved to the `inflight` Set when they start loading, and assuming a successful
-		load, to the `queue` Set for further processing.
-		
-		By the end of the load process this Set will be empty.
-	**/
-	var list : global.phaser.structs.Set<File>;
-	/**
-		Files are stored in this Set while they're in the process of being loaded.
-		
-		Upon a successful load they are moved to the `queue` Set.
-		
-		By the end of the load process this Set will be empty.
-	**/
-	var inflight : global.phaser.structs.Set<File>;
-	/**
-		Files are stored in this Set while they're being processed.
-		
-		If the process is successful they are moved to their final destination, which could be
-		a Cache or the Texture Manager.
-		
-		At the end of the load process this Set will be empty.
-	**/
-	var queue : global.phaser.structs.Set<File>;
-	/**
-		The total number of files that failed to load during the most recent load.
-		This value is reset when you call `Loader.start`.
-	**/
-	var totalFailed : Float;
-	/**
-		The total number of files that successfully loaded during the most recent load.
-		This value is reset when you call `Loader.start`.
-	**/
-	var totalComplete : Float;
-	/**
-		The current state of the Loader.
-	**/
-	final state : Float;
-	/**
-		If you want to append a URL before the path of any asset you can set this here.
-		
-		Useful if allowing the asset base url to be configured outside of the game code.
-		
-		Once a base URL is set it will affect every file loaded by the Loader from that point on. It does _not_ change any
-		file _already_ being loaded. To reset it, call this method with no arguments.
-	**/
-	function setBaseURL(?url:String):LoaderPlugin;
-	/**
-		The value of `path`, if set, is placed before any _relative_ file path given. For example:
-		
-		```javascript
-		this.load.setPath("images/sprites/");
-		this.load.image("ball", "ball.png");
-		this.load.image("tree", "level1/oaktree.png");
-		this.load.image("boom", "http://server.com/explode.png");
-		```
-		
-		Would load the `ball` file from `images/sprites/ball.png` and the tree from
-		`images/sprites/level1/oaktree.png` but the file `boom` would load from the URL
-		given as it's an absolute URL.
-		
-		Please note that the path is added before the filename but *after* the baseURL (if set.)
-		
-		Once a path is set it will then affect every file added to the Loader from that point on. It does _not_ change any
-		file _already_ in the load queue. To reset it, call this method with no arguments.
-	**/
-	function setPath(?path:String):LoaderPlugin;
-	/**
-		An optional prefix that is automatically prepended to the start of every file key.
-		
-		If prefix was `MENU.` and you load an image with the key 'Background' the resulting key would be `MENU.Background`.
-		
-		Once a prefix is set it will then affect every file added to the Loader from that point on. It does _not_ change any
-		file _already_ in the load queue. To reset it, call this method with no arguments.
-	**/
-	function setPrefix(?prefix:String):LoaderPlugin;
-	/**
-		Sets the Cross Origin Resource Sharing value used when loading files.
-		
-		Files can override this value on a per-file basis by specifying an alternative `crossOrigin` value in their file config.
-		
-		Once CORs is set it will then affect every file loaded by the Loader from that point on, as long as they don't have
-		their own CORs setting. To reset it, call this method with no arguments.
-		
-		For more details about CORs see https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
-	**/
-	function setCORS(?crossOrigin:String):LoaderPlugin;
-	/**
-		Adds a file, or array of files, into the load queue.
-		
-		The file must be an instance of `Phaser.Loader.File`, or a class that extends it. The Loader will check that the key
-		used by the file won't conflict with any other key either in the loader, the inflight queue or the target cache.
-		If allowed it will then add the file into the pending list, read for the load to start. Or, if the load has already
-		started, ready for the next batch of files to be pulled from the list to the inflight queue.
-		
-		You should not normally call this method directly, but rather use one of the Loader methods like `image` or `atlas`,
-		however you can call this as long as the file given to it is well formed.
-	**/
-	function addFile(file:ts.AnyOf2<File, Array<File>>):Void;
-	/**
-		Checks the key and type of the given file to see if it will conflict with anything already
-		in a Cache, the Texture Manager, or the list or inflight queues.
-	**/
-	function keyExists(file:File):Bool;
-	/**
-		Takes a well formed, fully parsed pack file object and adds its entries into the load queue. Usually you do not call
-		this method directly, but instead use `Loader.pack` and supply a path to a JSON file that holds the
-		pack data. However, if you've got the data prepared you can pass it to this method.
-		
-		You can also provide an optional key. If you do then it will only add the entries from that part of the pack into
-		to the load queue. If not specified it will add all entries it finds. For more details about the pack file format
-		see the `LoaderPlugin.pack` method.
-	**/
-	function addPack(pack:Dynamic, ?packKey:String):Bool;
-	/**
-		Is the Loader actively loading, or processing loaded files?
-	**/
-	function isLoading():Bool;
-	/**
-		Is the Loader ready to start a new load?
-	**/
-	function isReady():Bool;
-	/**
-		Starts the Loader running. This will reset the progress and totals and then emit a `start` event.
-		If there is nothing in the queue the Loader will immediately complete, otherwise it will start
-		loading the first batch of files.
-		
-		The Loader is started automatically if the queue is populated within your Scenes `preload` method.
-		
-		However, outside of this, you need to call this method to start it.
-		
-		If the Loader is already running this method will simply return.
-	**/
-	function start():Void;
-	/**
-		Called automatically during the load process.
-		It updates the `progress` value and then emits a progress event, which you can use to
-		display a loading bar in your game.
-	**/
-	function updateProgress():Void;
-	/**
-		Called automatically during the load process.
-	**/
-	function update():Void;
-	/**
-		An internal method called automatically by the XHRLoader belong to a File.
-		
-		This method will remove the given file from the inflight Set and update the load progress.
-		If the file was successful its `onProcess` method is called, otherwise it is added to the delete queue.
-	**/
-	function nextFile(file:File, success:Bool):Void;
-	/**
-		An internal method that is called automatically by the File when it has finished processing.
-		
-		If the process was successful, and the File isn't part of a MultiFile, its `addToCache` method is called.
-		
-		It this then removed from the queue. If there are no more files to load `loadComplete` is called.
-	**/
-	function fileProcessComplete(file:File):Void;
-	/**
-		Called at the end when the load queue is exhausted and all files have either loaded or errored.
-		By this point every loaded file will now be in its associated cache and ready for use.
-		
-		Also clears down the Sets, puts progress to 1 and clears the deletion queue.
-	**/
-	function loadComplete():Void;
-	/**
-		Adds a File into the pending-deletion queue.
-	**/
-	function flagForRemoval(file:File):Void;
-	/**
-		Converts the given JSON data into a file that the browser then prompts you to download so you can save it locally.
-		
-		The data must be well formed JSON and ready-parsed, not a JavaScript object.
-	**/
-	function saveJSON(data:Dynamic, ?filename:String):LoaderPlugin;
-	/**
-		Causes the browser to save the given data as a file to its default Downloads folder.
-		
-		Creates a DOM level anchor link, assigns it as being a `download` anchor, sets the href
-		to be an ObjectURL based on the given data, and then invokes a click event.
-	**/
-	function save(data:Dynamic, ?filename:String, ?filetype:String):LoaderPlugin;
-	/**
-		Resets the Loader.
-		
-		This will clear all lists and reset the base URL, path and prefix.
-		
-		Warning: If the Loader is currently downloading files, or has files in its queue, they will be aborted.
-	**/
-	function reset():Void;
 	/**
 		Add a listener for a given event.
 	**/

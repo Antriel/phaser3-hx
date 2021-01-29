@@ -30,14 +30,14 @@ package global.phaser.utils;
 	**/
 	static function Pad(str:ts.AnyOf3<String, Float, Dynamic>, ?len:Float, ?pad:String, ?dir:Float):String;
 	/**
+		Takes a string and removes the character at the given index.
+	**/
+	static function RemoveAt(string:String, index:Float):String;
+	/**
 		Takes the given string and reverses it, returning the reversed string.
 		For example if given the string `Atari 520ST` it would return `TS025 iratA`.
 	**/
 	static function Reverse(string:String):String;
-	/**
-		Capitalizes the first letter of a string if there is one.
-	**/
-	static function UppercaseFirst(str:String):String;
 	/**
 		Creates and returns an RFC4122 version 4 compliant UUID.
 		
@@ -45,4 +45,8 @@ package global.phaser.utils;
 		hexadecimal digit from 0 to f, and `y` is replaced with a random hexadecimal digit from 8 to b.
 	**/
 	static function UUID():String;
+	/**
+		Capitalizes the first letter of a string if there is one.
+	**/
+	static function UppercaseFirst(str:String):String;
 }

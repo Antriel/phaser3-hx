@@ -86,6 +86,22 @@ package global.phaser.time;
 	**/
 	function getElapsedSeconds():Float;
 	/**
+		Returns the time interval until the next iteration of the Timer Event.
+	**/
+	function getRemaining():Float;
+	/**
+		Returns the time interval until the next iteration of the Timer Event in seconds.
+	**/
+	function getRemainingSeconds():Float;
+	/**
+		Returns the time interval until the last iteration of the Timer Event.
+	**/
+	function getOverallRemaining():Float;
+	/**
+		Returns the time interval until the last iteration of the Timer Event in seconds.
+	**/
+	function getOverallRemainingSeconds():Float;
+	/**
 		Forces the Timer Event to immediately expire, thus scheduling its removal in the next frame.
 	**/
 	function remove(?dispatchCallback:Bool):Void;

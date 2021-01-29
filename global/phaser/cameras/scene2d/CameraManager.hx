@@ -23,7 +23,7 @@ package global.phaser.cameras.scene2d;
 	viewport, and changing the viewport has no impact on the scrolling.
 	
 	By default a Camera will render all Game Objects it can see. You can change this using the `ignore` method,
-	allowing you to filter Game Objects out on a per-Camera basis. The Camera Manager can manage up to 31 unique 
+	allowing you to filter Game Objects out on a per-Camera basis. The Camera Manager can manage up to 31 unique
 	'Game Object ignore capable' Cameras. Any Cameras beyond 31 that you create will all be given a Camera ID of
 	zero, meaning that they cannot be used for Game Object exclusion. This means if you need your Camera to ignore
 	Game Objects, make sure it's one of the first 31 created.
@@ -148,7 +148,13 @@ package global.phaser.cameras.scene2d;
 		It will iterate through all local cameras and render them in turn, as long as they're visible and have
 		an alpha level > 0.
 	**/
-	private function render(renderer:ts.AnyOf2<global.phaser.renderer.canvas.CanvasRenderer, global.phaser.renderer.webgl.WebGLRenderer>, children:Array<global.phaser.gameobjects.GameObject>, interpolation:Float):Void;
+	private function render(renderer:ts.AnyOf2<global.phaser.renderer.canvas.CanvasRenderer, global.phaser.renderer.webgl.WebGLRenderer>, displayList:global.phaser.gameobjects.DisplayList):Void;
+	/**
+		Takes an array of Game Objects and a Camera and returns a new array
+		containing only those Game Objects that pass the `willRender` test
+		against the given Camera.
+	**/
+	function getVisibleChildren(children:Array<global.phaser.gameobjects.GameObject>, camera:Camera):Array<global.phaser.gameobjects.GameObject>;
 	/**
 		Resets this Camera Manager.
 		

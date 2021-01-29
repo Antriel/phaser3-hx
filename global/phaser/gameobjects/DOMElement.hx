@@ -16,6 +16,9 @@ package global.phaser.gameobjects;
 	of the game canvas. This div is sized to match the canvas, and if the canvas size changes, as a result of
 	settings within the Scale Manager, the dom container is resized accordingly.
 	
+	If you have not already done so, you have to provide a `parent` in the Game Configuration, or the DOM
+	Container will fail to be created.
+	
 	You can create a DOM Element by either passing in DOMStrings, or by passing in a reference to an existing
 	Element that you wish to be placed under the control of Phaser. For example:
 	
@@ -613,6 +616,10 @@ package global.phaser.gameobjects;
 	**/
 	function setPosition(?x:Float, ?y:Float, ?z:Float, ?w:Float):DOMElement;
 	/**
+		Copies an object's coordinates to this Game Object's position.
+	**/
+	function copyPosition(source:ts.AnyOf3<global.phaser.types.math.Vector2Like, global.phaser.types.math.Vector3Like, global.phaser.types.math.Vector4Like>):DOMElement;
+	/**
 		Sets the position of this Game Object to be a random position within the confines of
 		the given area.
 		
@@ -661,6 +668,17 @@ package global.phaser.gameobjects;
 		Gets the world transform matrix for this Game Object, factoring in any parent Containers.
 	**/
 	function getWorldTransformMatrix(?tempMatrix:global.phaser.gameobjects.components.TransformMatrix, ?parentMatrix:global.phaser.gameobjects.components.TransformMatrix):global.phaser.gameobjects.components.TransformMatrix;
+	/**
+		Takes the given `x` and `y` coordinates and converts them into local space for this
+		Game Object, taking into account parent and local transforms, and the Display Origin.
+		
+		The returned Vector2 contains the translated point in its properties.
+		
+		A Camera needs to be provided in order to handle modified scroll factors. If no
+		camera is specified, it will use the `main` camera from the Scene to which this
+		Game Object belongs.
+	**/
+	function getLocalPoint(x:Float, y:Float, ?point:global.phaser.math.Vector2, ?camera:global.phaser.cameras.scene2d.Camera):global.phaser.math.Vector2;
 	/**
 		Gets the sum total rotation of all of this Game Objects parent Containers.
 		
@@ -779,7 +797,7 @@ package global.phaser.gameobjects;
 		
 		You can also provide an Input Configuration Object as the only argument to this method.
 	**/
-	function setInteractive(?shape:Dynamic, ?callback:global.phaser.types.input.HitAreaCallback, ?dropZone:Bool):DOMElement;
+	function setInteractive(?hitArea:Dynamic, ?callback:global.phaser.types.input.HitAreaCallback, ?dropZone:Bool):DOMElement;
 	/**
 		If this Game Object has previously been enabled for input, this will disable it.
 		

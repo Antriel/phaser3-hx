@@ -134,10 +134,11 @@ package global.phaser.physics.arcade;
 	/**
 		When `useDamping` is false (the default), this is absolute loss of velocity due to movement, in pixels per second squared.
 		
-		When `useDamping` is true, this is 1 minus the damping factor.
+		When `useDamping` is true, this is a damping multiplier between 0 and 1.
+		A value of 0 means the Body stops instantly.
+		A value of 0.01 mean the Body loses 99% of its velocity per second.
+		A value of 0.1 means the Body loses 90% of its velocity per second.
 		A value of 1 means the Body loses no velocity.
-		A value of 0.95 means the Body loses 5% of its velocity per step.
-		A value of 0.5 means the Body loses 50% of its velocity per step.
 		
 		The x and y components are applied separately.
 		
@@ -211,8 +212,8 @@ package global.phaser.physics.arcade;
 		by using damping, avoiding the axis-drift that is prone with linear deceleration.
 		
 		If you enable this property then you should use far smaller `drag` values than with linear, as
-		they are used as a multiplier on the velocity. Values such as 0.95 will give a nice slow
-		deceleration, where-as smaller values, such as 0.5 will stop an object almost immediately.
+		they are used as a multiplier on the velocity. Values such as 0.05 will give a nice slow
+		deceleration.
 	**/
 	var useDamping : Bool;
 	/**
@@ -256,6 +257,18 @@ package global.phaser.physics.arcade;
 		Whether this Body can be moved by collisions with another Body.
 	**/
 	var immovable : Bool;
+	/**
+		Sets if this Body can be pushed by another Body.
+		
+		A body that cannot be pushed will reflect back all of the velocity it is given to the
+		colliding body. If that body is also not pushable, then the separation will be split
+		between them evenly.
+		
+		If you want your body to never move or seperate at all, see the `setImmovable` method.
+		
+		By default, Dynamic Bodies are always pushable.
+	**/
+	var pushable : Bool;
 	/**
 		Whether the Body's position and rotation are affected by its velocity, acceleration, drag, and gravity.
 	**/
@@ -341,7 +354,7 @@ package global.phaser.physics.arcade;
 		
 		This method is only called if the physics world is going to run a step this frame.
 	**/
-	function resetFlags():Void;
+	function resetFlags(?clear:Bool):Void;
 	/**
 		Syncs the position body position with the parent Game Object.
 		
@@ -373,6 +386,7 @@ package global.phaser.physics.arcade;
 	function checkWorldBounds():Bool;
 	/**
 		Sets the offset of the Body's position from its Game Object's position.
+		The Body's `position` isn't changed until the next `preUpdate`.
 	**/
 	function setOffset(x:Float, ?y:Float):Body;
 	/**
@@ -386,7 +400,7 @@ package global.phaser.physics.arcade;
 	**/
 	function setCircle(radius:Float, ?offsetX:Float, ?offsetY:Float):Body;
 	/**
-		Resets this Body to the given coordinates. Also positions its parent Game Object to the same coordinates.
+		Sets this Body's parent Game Object to the given coordinates and resets this Body at the new coordinates.
 		If the Body had any velocity or acceleration it is lost as a result of calling this.
 	**/
 	function reset(x:Float, y:Float):Void;
@@ -481,9 +495,9 @@ package global.phaser.physics.arcade;
 	/**
 		Sets whether this Body collides with the world boundary.
 		
-		Optionally also sets the World Bounce values. If the `Body.worldBounce` is null, it's set to a new Phaser.Math.Vector2 first.
+		Optionally also sets the World Bounce and `onWorldBounds` values.
 	**/
-	function setCollideWorldBounds(?value:Bool, ?bounceX:Float, ?bounceY:Float):Body;
+	function setCollideWorldBounds(?value:Bool, ?bounceX:Float, ?bounceY:Float, ?onWorldBounds:Bool):Body;
 	/**
 		Sets the Body's velocity.
 	**/
@@ -500,6 +514,14 @@ package global.phaser.physics.arcade;
 		Sets the Body's maximum velocity.
 	**/
 	function setMaxVelocity(x:Float, ?y:Float):Body;
+	/**
+		Sets the Body's maximum horizontal velocity.
+	**/
+	function setMaxVelocityX(value:Float):Body;
+	/**
+		Sets the Body's maximum vertical velocity.
+	**/
+	function setMaxVelocityY(value:Float):Body;
 	/**
 		Sets the maximum speed the Body can move.
 	**/
@@ -544,6 +566,18 @@ package global.phaser.physics.arcade;
 		Sets the Body's drag.
 	**/
 	function setDrag(x:Float, y:Float):Body;
+	/**
+		If this Body is using `drag` for deceleration this property controls how the drag is applied.
+		If set to `true` drag will use a damping effect rather than a linear approach. If you are
+		creating a game where the Body moves freely at any angle (i.e. like the way the ship moves in
+		the game Asteroids) then you will get a far smoother and more visually correct deceleration
+		by using damping, avoiding the axis-drift that is prone with linear deceleration.
+		
+		If you enable this property then you should use far smaller `drag` values than with linear, as
+		they are used as a multiplier on the velocity. Values such as 0.95 will give a nice slow
+		deceleration, where-as smaller values, such as 0.5 will stop an object almost immediately.
+	**/
+	function setDamping(value:Bool):Body;
 	/**
 		Sets the Body's horizontal drag.
 	**/
@@ -601,11 +635,21 @@ package global.phaser.physics.arcade;
 	**/
 	function setEnable(?value:Bool):Body;
 	/**
-		The Body's horizontal position (left edge).
+		This is an internal handler, called by the `ProcessX` function as part
+		of the collision step. You should almost never call this directly.
+	**/
+	function processX(x:Float, ?vx:Float, ?left:Bool, ?right:Bool):Void;
+	/**
+		This is an internal handler, called by the `ProcessY` function as part
+		of the collision step. You should almost never call this directly.
+	**/
+	function processY(y:Float, ?vy:Float, ?up:Bool, ?down:Bool):Void;
+	/**
+		The Bodys horizontal position (left edge).
 	**/
 	var x : Float;
 	/**
-		The Body's vertical position (top edge).
+		The Bodys vertical position (top edge).
 	**/
 	var y : Float;
 	/**

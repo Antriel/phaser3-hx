@@ -6,6 +6,10 @@ package global.phaser.utils;
 	**/
 	static function Clone(obj:Dynamic):Dynamic;
 	/**
+		Deep Copy the given object or array.
+	**/
+	static function DeepCopy(obj:Dynamic):Dynamic;
+	/**
 		This is a slightly modified version of http://api.jquery.com/jQuery.extend/
 	**/
 	static function Extend(args:haxe.extern.Rest<Dynamic>):Dynamic;

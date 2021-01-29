@@ -69,8 +69,6 @@ package global.phaser.math;
 		The angle returned will be in the same range. If the returned angle is
 		greater than 0 then it's a counter-clockwise rotation, if < 0 then it's
 		a clockwise rotation.
-		
-		TODO: Wrap the angles in this function?
 	**/
 	static function ShortestBetween(angle1:Float, angle2:Float):Float;
 	/**

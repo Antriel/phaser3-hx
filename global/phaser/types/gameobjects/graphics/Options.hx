@@ -1,7 +1,7 @@
 package global.phaser.types.gameobjects.graphics;
 
 /**
-	Options for the Graphics game Object.
+	Options for the Graphics Game Object.
 **/
 typedef Options = Styles & {
 	/**

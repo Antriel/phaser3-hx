@@ -1,15 +1,10 @@
 package global.phaser.tilemaps;
 
 /**
-	A Static Tilemap Layer is a Game Object that renders LayerData from a Tilemap when used in combination
+	A Tilemap Layer is a Game Object that renders LayerData from a Tilemap when used in combination
 	with one, or more, Tilesets.
-	
-	A Static Tilemap Layer is optimized for rendering speed over flexibility. You cannot apply per-tile
-	effects like tint or alpha, or change the tiles or tilesets the layer uses.
-	
-	Use a Static Tilemap Layer instead of a Dynamic Tilemap Layer when you don't need tile manipulation features.
 **/
-@:native("Phaser.Tilemaps.StaticTilemapLayer") extern class StaticTilemapLayer extends global.phaser.gameobjects.GameObject {
+@:native("Phaser.Tilemaps.TilemapLayer") extern class TilemapLayer extends global.phaser.gameobjects.GameObject {
 	function new(scene:global.phaser.Scene, tilemap:Tilemap, layerIndex:Float, tileset:ts.AnyOf4<String, Array<String>, Tileset, Array<Tileset>>, ?x:Float, ?y:Float);
 	/**
 		Used internally by physics system to perform fast type checks.
@@ -29,20 +24,24 @@ package global.phaser.tilemaps;
 	**/
 	var layer : LayerData;
 	/**
-		The Tileset/s associated with this layer.
-		
-		As of Phaser 3.14 this property is now an array of Tileset objects, previously it was a single reference.
+		An array of `Tileset` objects associated with this layer.
 	**/
 	var tileset : Array<Tileset>;
 	/**
-		Used internally by the Canvas renderer.
-		This holds the tiles that are visible within the camera in the last frame.
+		The total number of tiles drawn by the renderer in the last frame.
 	**/
-	var culledTiles : Array<Dynamic>;
+	final tilesDrawn : Float;
 	/**
-		Canvas only.
+		The total number of tiles in this layer. Updated every frame.
+	**/
+	final tilesTotal : Float;
+	/**
+		Used internally during rendering. This holds the tiles that are visible within the Camera.
+	**/
+	var culledTiles : Array<Tile>;
+	/**
+		You can control if the camera should cull tiles on this layer before rendering them or not.
 		
-		You can control if the Cameras should cull tiles before rendering them or not.
 		By default the camera will try to cull the tiles in this layer, to avoid over-drawing to the renderer.
 		
 		However, there are some instances when you may wish to disable this, and toggling this flag allows
@@ -50,47 +49,35 @@ package global.phaser.tilemaps;
 	**/
 	var skipCull : Bool;
 	/**
-		Canvas only.
-		
-		The total number of tiles drawn by the renderer in the last frame.
-		
-		This only works when rending with Canvas.
-	**/
-	final tilesDrawn : Float;
-	/**
-		Canvas only.
-		
-		The total number of tiles in this layer. Updated every frame.
-	**/
-	final tilesTotal : Float;
-	/**
-		Canvas only.
-		
 		The amount of extra tiles to add into the cull rectangle when calculating its horizontal size.
 		
 		See the method `setCullPadding` for more details.
 	**/
 	var cullPaddingX : Float;
 	/**
-		Canvas only.
-		
 		The amount of extra tiles to add into the cull rectangle when calculating its vertical size.
 		
 		See the method `setCullPadding` for more details.
 	**/
 	var cullPaddingY : Float;
 	/**
-		Canvas only.
-		
 		The callback that is invoked when the tiles are culled.
 		
-		By default it will call `TilemapComponents.CullTiles` but you can override this to call any function you like.
+		It will call a different function based on the map orientation:
 		
-		It will be sent 3 arguments:
+		Orthogonal (the default) is `TilemapComponents.CullTiles`
+		Isometric is `TilemapComponents.IsometricCullTiles`
+		Hexagonal is `TilemapComponents.HexagonalCullTiles`
+		Staggered is `TilemapComponents.StaggeredCullTiles`
+		
+		However, you can override this to call any function you like.
+		
+		It will be sent 4 arguments:
 		
 		1. The Phaser.Tilemaps.LayerData object for this Layer
 		2. The Camera that is culling the layer. You can check its `dirty` property to see if it has changed since the last cull.
 		3. A reference to the `culledTiles` array, which should be used to store the tiles you want rendered.
+		4. The Render Order constant.
 		
 		See the `TilemapComponents.CullTiles` source code for details on implementing your own culling system.
 	**/
@@ -99,10 +86,6 @@ package global.phaser.tilemaps;
 		An array holding the mapping between the tile indexes and the tileset they belong to.
 	**/
 	var gidMap : Array<Tileset>;
-	/**
-		Upload the tile data to a VBO.
-	**/
-	function upload(camera:global.phaser.cameras.scene2d.Camera, tilesetIndex:Float):StaticTilemapLayer;
 	/**
 		Sets the rendering (draw) order of the tiles in this layer.
 		
@@ -121,50 +104,49 @@ package global.phaser.tilemaps;
 		
 		You can provide either an integer (0 to 3), or the string version of the order.
 	**/
-	function setRenderOrder(renderOrder:ts.AnyOf2<String, Float>):StaticTilemapLayer;
+	function setRenderOrder(renderOrder:ts.AnyOf2<String, Float>):TilemapLayer;
 	/**
 		Calculates interesting faces at the given tile coordinates of the specified layer. Interesting
 		faces are used internally for optimizing collisions against tiles. This method is mostly used
 		internally to optimize recalculating faces when only one tile has been changed.
 	**/
-	function calculateFacesAt(tileX:Float, tileY:Float):StaticTilemapLayer;
+	function calculateFacesAt(tileX:Float, tileY:Float):TilemapLayer;
 	/**
 		Calculates interesting faces within the rectangular area specified (in tile coordinates) of the
 		layer. Interesting faces are used internally for optimizing collisions against tiles. This method
 		is mostly used internally.
 	**/
-	function calculateFacesWithin(?tileX:Float, ?tileY:Float, ?width:Float, ?height:Float):StaticTilemapLayer;
+	function calculateFacesWithin(?tileX:Float, ?tileY:Float, ?width:Float, ?height:Float):TilemapLayer;
 	/**
 		Creates a Sprite for every object matching the given tile indexes in the layer. You can
 		optionally specify if each tile will be replaced with a new tile after the Sprite has been
 		created. This is useful if you want to lay down special tiles in a level that are converted to
 		Sprites, but want to replace the tile itself with a floor tile or similar once converted.
 	**/
-	function createFromTiles(indexes:ts.AnyOf2<Float, Array<Dynamic>>, replacements:ts.AnyOf2<Float, Array<Dynamic>>, spriteConfig:global.phaser.types.gameobjects.sprite.SpriteConfig, ?scene:global.phaser.Scene, ?camera:global.phaser.cameras.scene2d.Camera):Array<global.phaser.gameobjects.Sprite>;
+	function createFromTiles(indexes:ts.AnyOf2<Float, Array<Dynamic>>, replacements:ts.AnyOf2<Float, Array<Dynamic>>, ?spriteConfig:global.phaser.types.gameobjects.sprite.SpriteConfig, ?scene:global.phaser.Scene, ?camera:global.phaser.cameras.scene2d.Camera):Array<global.phaser.gameobjects.Sprite>;
 	/**
 		Returns the tiles in the given layer that are within the cameras viewport.
-		This is used internally.
+		This is used internally during rendering.
 	**/
 	function cull(?camera:global.phaser.cameras.scene2d.Camera):Array<Tile>;
 	/**
-		Canvas only.
-		
-		You can control if the Cameras should cull tiles before rendering them or not.
-		By default the camera will try to cull the tiles in this layer, to avoid over-drawing to the renderer.
-		
-		However, there are some instances when you may wish to disable this.
+		Copies the tiles in the source rectangular area to a new destination (all specified in tile
+		coordinates) within the layer. This copies all tile properties & recalculates collision
+		information in the destination region.
 	**/
-	function setSkipCull(?value:Bool):StaticTilemapLayer;
+	function copy(srcTileX:Float, srcTileY:Float, width:Float, height:Float, destTileX:Float, destTileY:Float, ?recalculateFaces:Bool):TilemapLayer;
 	/**
-		Canvas only.
-		
-		When a Camera culls the tiles in this layer it does so using its view into the world, building up a
-		rectangle inside which the tiles must exist or they will be culled. Sometimes you may need to expand the size
-		of this 'cull rectangle', especially if you plan on rotating the Camera viewing the layer. Do so
-		by providing the padding values. The values given are in tiles, not pixels. So if the tile width was 32px
-		and you set `paddingX` to be 4, it would add 32px x 4 to the cull rectangle (adjusted for scale)
+		Sets the tiles in the given rectangular area (in tile coordinates) of the layer with the
+		specified index. Tiles will be set to collide if the given index is a colliding index.
+		Collision information in the region will be recalculated.
 	**/
-	function setCullPadding(?paddingX:Float, ?paddingY:Float):StaticTilemapLayer;
+	function fill(index:Float, ?tileX:Float, ?tileY:Float, ?width:Float, ?height:Float, ?recalculateFaces:Bool):TilemapLayer;
+	/**
+		For each tile in the given rectangular area (in tile coordinates) of the layer, run the given
+		filter callback function. Any tiles that pass the filter test (i.e. where the callback returns
+		true) will returned as a new array. Similar to Array.prototype.Filter in vanilla JS.
+	**/
+	function filterTiles(callback:haxe.Constraints.Function, ?context:Dynamic, ?tileX:Float, ?tileY:Float, ?width:Float, ?height:Float, ?filteringOptions:global.phaser.types.tilemaps.FilteringOptions):Array<Tile>;
 	/**
 		Searches the entire map layer for the first tile matching the given index, then returns that Tile
 		object. If no match is found, it returns null. The search starts from the top-left tile and
@@ -178,18 +160,12 @@ package global.phaser.tilemaps;
 		satisfies the provided testing function. I.e. finds the first tile for which `callback` returns
 		true. Similar to Array.prototype.find in vanilla JS.
 	**/
-	function findTile(callback:haxe.Constraints.Function, ?context:Dynamic, ?tileX:Float, ?tileY:Float, ?width:Float, ?height:Float, ?filteringOptions:global.phaser.types.tilemaps.FilteringOptions):Tile;
-	/**
-		For each tile in the given rectangular area (in tile coordinates) of the layer, run the given
-		filter callback function. Any tiles that pass the filter test (i.e. where the callback returns
-		true) will returned as a new array. Similar to Array.prototype.Filter in vanilla JS.
-	**/
-	function filterTiles(callback:haxe.Constraints.Function, ?context:Dynamic, ?tileX:Float, ?tileY:Float, ?width:Float, ?height:Float, ?filteringOptions:global.phaser.types.tilemaps.FilteringOptions):Array<Tile>;
+	function findTile(callback:global.FindTileCallback, ?context:Dynamic, ?tileX:Float, ?tileY:Float, ?width:Float, ?height:Float, ?filteringOptions:global.phaser.types.tilemaps.FilteringOptions):Tile;
 	/**
 		For each tile in the given rectangular area (in tile coordinates) of the layer, run the given
 		callback. Similar to Array.prototype.forEach in vanilla JS.
 	**/
-	function forEachTile(callback:haxe.Constraints.Function, ?context:Dynamic, ?tileX:Float, ?tileY:Float, ?width:Float, ?height:Float, ?filteringOptions:global.phaser.types.tilemaps.FilteringOptions):StaticTilemapLayer;
+	function forEachTile(callback:global.EachTileCallback, ?context:Dynamic, ?tileX:Float, ?tileY:Float, ?width:Float, ?height:Float, ?filteringOptions:global.phaser.types.tilemaps.FilteringOptions):TilemapLayer;
 	/**
 		Gets a tile at the given tile coordinates from the given layer.
 	**/
@@ -203,14 +179,14 @@ package global.phaser.tilemaps;
 	**/
 	function getTilesWithin(?tileX:Float, ?tileY:Float, ?width:Float, ?height:Float, ?filteringOptions:global.phaser.types.tilemaps.FilteringOptions):Array<Tile>;
 	/**
-		Gets the tiles in the given rectangular area (in world coordinates) of the layer.
-	**/
-	function getTilesWithinWorldXY(worldX:Float, worldY:Float, width:Float, height:Float, ?filteringOptions:global.phaser.types.tilemaps.FilteringOptions, ?camera:global.phaser.cameras.scene2d.Camera):Array<Tile>;
-	/**
 		Gets the tiles that overlap with the given shape in the given layer. The shape must be a Circle,
 		Line, Rectangle or Triangle. The shape should be in world coordinates.
 	**/
 	function getTilesWithinShape(shape:ts.AnyOf4<global.phaser.geom.Triangle, global.phaser.geom.Circle, global.phaser.geom.Line, global.phaser.geom.Rectangle>, ?filteringOptions:global.phaser.types.tilemaps.FilteringOptions, ?camera:global.phaser.cameras.scene2d.Camera):Array<Tile>;
+	/**
+		Gets the tiles in the given rectangular area (in world coordinates) of the layer.
+	**/
+	function getTilesWithinWorldXY(worldX:Float, worldY:Float, width:Float, height:Float, ?filteringOptions:global.phaser.types.tilemaps.FilteringOptions, ?camera:global.phaser.cameras.scene2d.Camera):Array<Tile>;
 	/**
 		Checks if there is a tile at the given location (in tile coordinates) in the given layer. Returns
 		false if there is no tile or if the tile at that location has an index of -1.
@@ -222,25 +198,87 @@ package global.phaser.tilemaps;
 	**/
 	function hasTileAtWorldXY(worldX:Float, worldY:Float, ?camera:global.phaser.cameras.scene2d.Camera):Bool;
 	/**
+		Puts a tile at the given tile coordinates in the specified layer. You can pass in either an index
+		or a Tile object. If you pass in a Tile, all attributes will be copied over to the specified
+		location. If you pass in an index, only the index at the specified location will be changed.
+		Collision information will be recalculated at the specified location.
+	**/
+	function putTileAt(tile:ts.AnyOf2<Float, Tile>, tileX:Float, tileY:Float, ?recalculateFaces:Bool):Tile;
+	/**
+		Puts a tile at the given world coordinates (pixels) in the specified layer. You can pass in either
+		an index or a Tile object. If you pass in a Tile, all attributes will be copied over to the
+		specified location. If you pass in an index, only the index at the specified location will be
+		changed. Collision information will be recalculated at the specified location.
+	**/
+	function putTileAtWorldXY(tile:ts.AnyOf2<Float, Tile>, worldX:Float, worldY:Float, ?recalculateFaces:Bool, ?camera:global.phaser.cameras.scene2d.Camera):Tile;
+	/**
+		Puts an array of tiles or a 2D array of tiles at the given tile coordinates in the specified
+		layer. The array can be composed of either tile indexes or Tile objects. If you pass in a Tile,
+		all attributes will be copied over to the specified location. If you pass in an index, only the
+		index at the specified location will be changed. Collision information will be recalculated
+		within the region tiles were changed.
+	**/
+	function putTilesAt(tile:ts.AnyOf4<Array<Float>, Array<Array<Float>>, Array<Tile>, Array<Array<Tile>>>, tileX:Float, tileY:Float, ?recalculateFaces:Bool):TilemapLayer;
+	/**
+		Randomizes the indexes of a rectangular region of tiles (in tile coordinates) within the
+		specified layer. Each tile will receive a new index. If an array of indexes is passed in, then
+		those will be used for randomly assigning new tile indexes. If an array is not provided, the
+		indexes found within the region (excluding -1) will be used for randomly assigning new tile
+		indexes. This method only modifies tile indexes and does not change collision information.
+	**/
+	function randomize(?tileX:Float, ?tileY:Float, ?width:Float, ?height:Float, ?indexes:Array<Float>):TilemapLayer;
+	/**
+		Removes the tile at the given tile coordinates in the specified layer and updates the layers
+		collision information.
+	**/
+	function removeTileAt(tileX:Float, tileY:Float, ?replaceWithNull:Bool, ?recalculateFaces:Bool):Tile;
+	/**
+		Removes the tile at the given world coordinates in the specified layer and updates the layers
+		collision information.
+	**/
+	function removeTileAtWorldXY(worldX:Float, worldY:Float, ?replaceWithNull:Bool, ?recalculateFaces:Bool, ?camera:global.phaser.cameras.scene2d.Camera):Tile;
+	/**
 		Draws a debug representation of the layer to the given Graphics. This is helpful when you want to
 		get a quick idea of which of your tiles are colliding and which have interesting faces. The tiles
 		are drawn starting at (0, 0) in the Graphics, allowing you to place the debug representation
 		wherever you want on the screen.
 	**/
-	function renderDebug(graphics:global.phaser.gameobjects.Graphics, styleConfig:global.phaser.types.tilemaps.StyleConfig):StaticTilemapLayer;
+	function renderDebug(graphics:global.phaser.gameobjects.Graphics, ?styleConfig:global.phaser.types.tilemaps.StyleConfig):TilemapLayer;
+	/**
+		Scans the given rectangular area (given in tile coordinates) for tiles with an index matching
+		`findIndex` and updates their index to match `newIndex`. This only modifies the index and does
+		not change collision information.
+	**/
+	function replaceByIndex(findIndex:Float, newIndex:Float, ?tileX:Float, ?tileY:Float, ?width:Float, ?height:Float):TilemapLayer;
+	/**
+		You can control if the Cameras should cull tiles before rendering them or not.
+		
+		By default the camera will try to cull the tiles in this layer, to avoid over-drawing to the renderer.
+		
+		However, there are some instances when you may wish to disable this.
+	**/
+	function setSkipCull(?value:Bool):TilemapLayer;
+	/**
+		When a Camera culls the tiles in this layer it does so using its view into the world, building up a
+		rectangle inside which the tiles must exist or they will be culled. Sometimes you may need to expand the size
+		of this 'cull rectangle', especially if you plan on rotating the Camera viewing the layer. Do so
+		by providing the padding values. The values given are in tiles, not pixels. So if the tile width was 32px
+		and you set `paddingX` to be 4, it would add 32px x 4 to the cull rectangle (adjusted for scale)
+	**/
+	function setCullPadding(?paddingX:Float, ?paddingY:Float):TilemapLayer;
 	/**
 		Sets collision on the given tile or tiles within a layer by index. You can pass in either a
 		single numeric index or an array of indexes: [2, 3, 15, 20]. The `collides` parameter controls if
 		collision will be enabled (true) or disabled (false).
 	**/
-	function setCollision(indexes:ts.AnyOf2<Float, Array<Dynamic>>, ?collides:Bool, ?recalculateFaces:Bool, ?updateLayer:Bool):StaticTilemapLayer;
+	function setCollision(indexes:ts.AnyOf2<Float, Array<Dynamic>>, ?collides:Bool, ?recalculateFaces:Bool, ?updateLayer:Bool):TilemapLayer;
 	/**
 		Sets collision on a range of tiles in a layer whose index is between the specified `start` and
 		`stop` (inclusive). Calling this with a start value of 10 and a stop value of 14 would set
 		collision for tiles 10, 11, 12, 13 and 14. The `collides` parameter controls if collision will be
 		enabled (true) or disabled (false).
 	**/
-	function setCollisionBetween(start:Float, stop:Float, ?collides:Bool, ?recalculateFaces:Bool):StaticTilemapLayer;
+	function setCollisionBetween(start:Float, stop:Float, ?collides:Bool, ?recalculateFaces:Bool):TilemapLayer;
 	/**
 		Sets collision on the tiles within a layer by checking tile properties. If a tile has a property
 		that matches the given properties object, its collision flag will be set. The `collides`
@@ -250,33 +288,46 @@ package global.phaser.tilemaps;
 		also use an array of values, e.g. `{ types: ["stone", "lava", "sand" ] }`. If a tile has a
 		"types" property that matches any of those values, its collision flag will be updated.
 	**/
-	function setCollisionByProperty(properties:Dynamic, ?collides:Bool, ?recalculateFaces:Bool):StaticTilemapLayer;
+	function setCollisionByProperty(properties:Dynamic, ?collides:Bool, ?recalculateFaces:Bool):TilemapLayer;
 	/**
 		Sets collision on all tiles in the given layer, except for tiles that have an index specified in
 		the given array. The `collides` parameter controls if collision will be enabled (true) or
 		disabled (false). Tile indexes not currently in the layer are not affected.
 	**/
-	function setCollisionByExclusion(indexes:Array<Float>, ?collides:Bool, ?recalculateFaces:Bool):StaticTilemapLayer;
-	/**
-		Sets a global collision callback for the given tile index within the layer. This will affect all
-		tiles on this layer that have the same index. If a callback is already set for the tile index it
-		will be replaced. Set the callback to null to remove it. If you want to set a callback for a tile
-		at a specific location on the map then see setTileLocationCallback.
-	**/
-	function setTileIndexCallback(indexes:ts.AnyOf2<Float, Array<Dynamic>>, callback:haxe.Constraints.Function, callbackContext:Dynamic):StaticTilemapLayer;
+	function setCollisionByExclusion(indexes:Array<Float>, ?collides:Bool, ?recalculateFaces:Bool):TilemapLayer;
 	/**
 		Sets collision on the tiles within a layer by checking each tiles collision group data
 		(typically defined in Tiled within the tileset collision editor). If any objects are found within
 		a tiles collision group, the tile's colliding information will be set. The `collides` parameter
 		controls if collision will be enabled (true) or disabled (false).
 	**/
-	function setCollisionFromCollisionGroup(?collides:Bool, ?recalculateFaces:Bool):StaticTilemapLayer;
+	function setCollisionFromCollisionGroup(?collides:Bool, ?recalculateFaces:Bool):TilemapLayer;
+	/**
+		Sets a global collision callback for the given tile index within the layer. This will affect all
+		tiles on this layer that have the same index. If a callback is already set for the tile index it
+		will be replaced. Set the callback to null to remove it. If you want to set a callback for a tile
+		at a specific location on the map then see setTileLocationCallback.
+	**/
+	function setTileIndexCallback(indexes:ts.AnyOf2<Float, Array<Float>>, callback:haxe.Constraints.Function, callbackContext:Dynamic):TilemapLayer;
 	/**
 		Sets a collision callback for the given rectangular area (in tile coordinates) within the layer.
 		If a callback is already set for the tile index it will be replaced. Set the callback to null to
 		remove it.
 	**/
-	function setTileLocationCallback(tileX:Float, tileY:Float, width:Float, height:Float, callback:haxe.Constraints.Function, ?callbackContext:Dynamic):StaticTilemapLayer;
+	function setTileLocationCallback(?tileX:Float, ?tileY:Float, ?width:Float, ?height:Float, ?callback:haxe.Constraints.Function, ?callbackContext:Dynamic):TilemapLayer;
+	/**
+		Shuffles the tiles in a rectangular region (specified in tile coordinates) within the given
+		layer. It will only randomize the tiles in that area, so if they're all the same nothing will
+		appear to have changed! This method only modifies tile indexes and does not change collision
+		information.
+	**/
+	function shuffle(?tileX:Float, ?tileY:Float, ?width:Float, ?height:Float):TilemapLayer;
+	/**
+		Scans the given rectangular area (given in tile coordinates) for tiles with an index matching
+		`indexA` and swaps then with `indexB`. This only modifies the index and does not change collision
+		information.
+	**/
+	function swapByIndex(tileA:Float, tileB:Float, ?tileX:Float, ?tileY:Float, ?width:Float, ?height:Float):TilemapLayer;
 	/**
 		Converts from tile X coordinates (tile units) to world X coordinates (pixels), factoring in the
 		layers position, scale and scroll.
@@ -294,6 +345,22 @@ package global.phaser.tilemaps;
 	**/
 	function tileToWorldXY(tileX:Float, tileY:Float, ?point:global.phaser.math.Vector2, ?camera:global.phaser.cameras.scene2d.Camera):global.phaser.math.Vector2;
 	/**
+		Randomizes the indexes of a rectangular region of tiles (in tile coordinates) within the
+		specified layer. Each tile will receive a new index. New indexes are drawn from the given
+		weightedIndexes array. An example weighted array:
+		
+		[
+		  { index: 6, weight: 4 },    // Probability of index 6 is 4 / 8
+		  { index: 7, weight: 2 },    // Probability of index 7 would be 2 / 8
+		  { index: 8, weight: 1.5 },  // Probability of index 8 would be 1.5 / 8
+		  { index: 26, weight: 0.5 }  // Probability of index 27 would be 0.5 / 8
+		]
+		
+		The probability of any index being choose is (the index's weight) / (sum of all weights). This
+		method only modifies tile indexes and does not change collision information.
+	**/
+	function weightedRandomize(weightedIndexes:Array<Dynamic>, ?tileX:Float, ?tileY:Float, ?width:Float, ?height:Float):TilemapLayer;
+	/**
 		Converts from world X coordinates (pixels) to tile X coordinates (tile units), factoring in the
 		layers position, scale and scroll.
 	**/
@@ -310,7 +377,7 @@ package global.phaser.tilemaps;
 	**/
 	function worldToTileXY(worldX:Float, worldY:Float, ?snapToFloor:Bool, ?point:global.phaser.math.Vector2, ?camera:global.phaser.cameras.scene2d.Camera):global.phaser.math.Vector2;
 	/**
-		Destroys this StaticTilemapLayer and removes its link to the associated LayerData.
+		Destroys this TilemapLayer and removes its link to the associated LayerData.
 	**/
 	function destroy(?removeFromTilemap:Bool):Void;
 	/**
@@ -318,7 +385,7 @@ package global.phaser.tilemaps;
 		
 		Immediately sets the alpha levels back to 1 (fully opaque).
 	**/
-	function clearAlpha():StaticTilemapLayer;
+	function clearAlpha():TilemapLayer;
 	/**
 		Set the Alpha level of this Game Object. The alpha controls the opacity of the Game Object as it renders.
 		Alpha values are provided as a float between 0, fully transparent, and 1, fully opaque.
@@ -326,7 +393,7 @@ package global.phaser.tilemaps;
 		If your game is running under WebGL you can optionally specify four different alpha values, each of which
 		correspond to the four corners of the Game Object. Under Canvas only the `topLeft` value given is used.
 	**/
-	function setAlpha(?topLeft:Float, ?topRight:Float, ?bottomLeft:Float, ?bottomRight:Float):StaticTilemapLayer;
+	function setAlpha(?topLeft:Float, ?topRight:Float, ?bottomLeft:Float, ?bottomRight:Float):TilemapLayer;
 	/**
 		The alpha value of the Game Object.
 		
@@ -396,7 +463,7 @@ package global.phaser.tilemaps;
 		reasons try to be careful about the construction of your Scene and the frequency in which blend modes
 		are used.
 	**/
-	function setBlendMode(value:ts.AnyOf2<String, global.phaser.BlendModes>):StaticTilemapLayer;
+	function setBlendMode(value:ts.AnyOf2<String, global.phaser.BlendModes>):TilemapLayer;
 	/**
 		The native (un-scaled) width of this Game Object.
 		
@@ -440,13 +507,13 @@ package global.phaser.tilemaps;
 		If you have enabled this Game Object for input, changing the size will _not_ change the
 		size of the hit area. To do this you should adjust the `input.hitArea` object directly.
 	**/
-	function setSize(width:Float, height:Float):StaticTilemapLayer;
+	function setSize(width:Float, height:Float):TilemapLayer;
 	/**
 		Sets the display size of this Game Object.
 		
 		Calling this will adjust the scale.
 	**/
-	function setDisplaySize(width:Float, height:Float):StaticTilemapLayer;
+	function setDisplaySize(width:Float, height:Float):TilemapLayer;
 	/**
 		The depth of this Game Object within the Scene.
 		
@@ -470,7 +537,7 @@ package global.phaser.tilemaps;
 		
 		Setting the depth will queue a depth sort event within the Scene.
 	**/
-	function setDepth(value:Float):StaticTilemapLayer;
+	function setDepth(value:Float):TilemapLayer;
 	/**
 		The horizontally flipped state of the Game Object.
 		
@@ -494,11 +561,11 @@ package global.phaser.tilemaps;
 		Flipping always takes place from the middle of the texture and does not impact the scale value.
 		If this Game Object has a physics body, it will not change the body. This is a rendering toggle only.
 	**/
-	function toggleFlipX():StaticTilemapLayer;
+	function toggleFlipX():TilemapLayer;
 	/**
 		Toggles the vertical flipped state of this Game Object.
 	**/
-	function toggleFlipY():StaticTilemapLayer;
+	function toggleFlipY():TilemapLayer;
 	/**
 		Sets the horizontal flipped state of this Game Object.
 		
@@ -506,11 +573,11 @@ package global.phaser.tilemaps;
 		Flipping always takes place from the middle of the texture and does not impact the scale value.
 		If this Game Object has a physics body, it will not change the body. This is a rendering toggle only.
 	**/
-	function setFlipX(value:Bool):StaticTilemapLayer;
+	function setFlipX(value:Bool):TilemapLayer;
 	/**
 		Sets the vertical flipped state of this Game Object.
 	**/
-	function setFlipY(value:Bool):StaticTilemapLayer;
+	function setFlipY(value:Bool):TilemapLayer;
 	/**
 		Sets the horizontal and vertical flipped state of this Game Object.
 		
@@ -518,11 +585,11 @@ package global.phaser.tilemaps;
 		Flipping always takes place from the middle of the texture and does not impact the scale value.
 		If this Game Object has a physics body, it will not change the body. This is a rendering toggle only.
 	**/
-	function setFlip(x:Bool, y:Bool):StaticTilemapLayer;
+	function setFlip(x:Bool, y:Bool):TilemapLayer;
 	/**
 		Resets the horizontal and vertical flipped state of this Game Object back to their default un-flipped state.
 	**/
-	function resetFlip():StaticTilemapLayer;
+	function resetFlip():TilemapLayer;
 	/**
 		Gets the center coordinate of this Game Object, regardless of origin.
 		The returned point is calculated in local space and does not factor in any parent containers
@@ -604,23 +671,25 @@ package global.phaser.tilemaps;
 		
 		The values are given in the range 0 to 1.
 	**/
-	function setOrigin(?x:Float, ?y:Float):StaticTilemapLayer;
+	function setOrigin(?x:Float, ?y:Float):TilemapLayer;
 	/**
 		Sets the origin of this Game Object based on the Pivot values in its Frame.
 	**/
-	function setOriginFromFrame():StaticTilemapLayer;
+	function setOriginFromFrame():TilemapLayer;
 	/**
 		Sets the display origin of this Game Object.
 		The difference between this and setting the origin is that you can use pixel values for setting the display origin.
 	**/
-	function setDisplayOrigin(?x:Float, ?y:Float):StaticTilemapLayer;
+	function setDisplayOrigin(?x:Float, ?y:Float):TilemapLayer;
 	/**
 		Updates the Display Origin cached values internally stored on this Game Object.
 		You don't usually call this directly, but it is exposed for edge-cases where you may.
 	**/
-	function updateDisplayOrigin():StaticTilemapLayer;
+	function updateDisplayOrigin():TilemapLayer;
 	/**
 		The initial WebGL pipeline of this Game Object.
+		
+		If you call `resetPipeline` on this Game Object, the pipeline is reset to this default.
 	**/
 	var defaultPipeline : global.phaser.renderer.webgl.WebGLPipeline;
 	/**
@@ -628,22 +697,142 @@ package global.phaser.tilemaps;
 	**/
 	var pipeline : global.phaser.renderer.webgl.WebGLPipeline;
 	/**
-		Sets the initial WebGL Pipeline of this Game Object.
-		This should only be called during the instantiation of the Game Object.
+		Does this Game Object have any Post Pipelines set?
 	**/
-	function initPipeline(?pipelineName:String):Bool;
+	var hasPostPipeline : Bool;
 	/**
-		Sets the active WebGL Pipeline of this Game Object.
+		The WebGL Post FX Pipelines this Game Object uses for post-render effects.
+		
+		The pipelines are processed in the order in which they appear in this array.
+		
+		If you modify this array directly, be sure to set the
+		`hasPostPipeline` property accordingly.
 	**/
-	function setPipeline(pipelineName:String):StaticTilemapLayer;
+	var postPipeline : Array<global.phaser.renderer.webgl.pipelines.PostFXPipeline>;
+	/**
+		An object to store pipeline specific data in, to be read by the pipelines this Game Object uses.
+	**/
+	var pipelineData : Dynamic;
+	/**
+		Sets the initial WebGL Pipeline of this Game Object.
+		
+		This should only be called during the instantiation of the Game Object. After that, use `setPipeline`.
+	**/
+	function initPipeline(pipeline:ts.AnyOf2<String, global.phaser.renderer.webgl.WebGLPipeline>):Bool;
+	/**
+		Sets the main WebGL Pipeline of this Game Object.
+		
+		Also sets the `pipelineData` property, if the parameter is given.
+		
+		Both the pipeline and post pipelines share the same pipeline data object.
+	**/
+	function setPipeline(pipeline:ts.AnyOf2<String, global.phaser.renderer.webgl.WebGLPipeline>, ?pipelineData:Dynamic, ?copyData:Bool):TilemapLayer;
+	/**
+		Sets one, or more, Post Pipelines on this Game Object.
+		
+		Post Pipelines are invoked after this Game Object has rendered to its target and
+		are commonly used for post-fx.
+		
+		The post pipelines are appended to the `postPipelines` array belonging to this
+		Game Object. When the renderer processes this Game Object, it iterates through the post
+		pipelines in the order in which they appear in the array. If you are stacking together
+		multiple effects, be aware that the order is important.
+		
+		If you call this method multiple times, the new pipelines will be appended to any existing
+		post pipelines already set. Use the `resetPostPipeline` method to clear them first, if required.
+		
+		You can optionally also sets the `pipelineData` property, if the parameter is given.
+		
+		Both the pipeline and post pipelines share the pipeline data object together.
+	**/
+	function setPostPipeline(pipelines:ts.AnyOf6<String, haxe.Constraints.Function, Array<haxe.Constraints.Function>, Array<String>, global.phaser.renderer.webgl.pipelines.PostFXPipeline, Array<global.phaser.renderer.webgl.pipelines.PostFXPipeline>>, ?pipelineData:Dynamic, ?copyData:Bool):TilemapLayer;
+	/**
+		Adds an entry to the `pipelineData` object belonging to this Game Object.
+		
+		If the 'key' already exists, its value is updated. If it doesn't exist, it is created.
+		
+		If `value` is undefined, and `key` exists, `key` is removed from the data object.
+		
+		Both the pipeline and post pipelines share the pipeline data object together.
+	**/
+	function setPipelineData(key:String, ?value:Dynamic):TilemapLayer;
+	/**
+		Gets a Post Pipeline instance from this Game Object, based on the given name, and returns it.
+	**/
+	function getPostPipeline(pipeline:ts.AnyOf3<String, haxe.Constraints.Function, global.phaser.renderer.webgl.pipelines.PostFXPipeline>):ts.AnyOf2<global.phaser.renderer.webgl.pipelines.PostFXPipeline, Array<global.phaser.renderer.webgl.pipelines.PostFXPipeline>>;
 	/**
 		Resets the WebGL Pipeline of this Game Object back to the default it was created with.
 	**/
-	function resetPipeline():Bool;
+	function resetPipeline(?resetPostPipelines:Bool, ?resetData:Bool):Bool;
+	/**
+		Resets the WebGL Post Pipelines of this Game Object. It does this by calling
+		the `destroy` method on each post pipeline and then clearing the local array.
+	**/
+	function resetPostPipeline(?resetData:Bool):Void;
+	/**
+		Removes a type of Post Pipeline instances from this Game Object, based on the given name, and destroys them.
+		
+		If you wish to remove all Post Pipelines use the `resetPostPipeline` method instead.
+	**/
+	function removePostPipeline(pipeline:ts.AnyOf2<String, global.phaser.renderer.webgl.pipelines.PostFXPipeline>):TilemapLayer;
 	/**
 		Gets the name of the WebGL Pipeline this Game Object is currently using.
 	**/
 	function getPipelineName():String;
+	/**
+		The horizontal scroll factor of this Game Object.
+		
+		The scroll factor controls the influence of the movement of a Camera upon this Game Object.
+		
+		When a camera scrolls it will change the location at which this Game Object is rendered on-screen.
+		It does not change the Game Objects actual position values.
+		
+		A value of 1 means it will move exactly in sync with a camera.
+		A value of 0 means it will not move at all, even if the camera moves.
+		Other values control the degree to which the camera movement is mapped to this Game Object.
+		
+		Please be aware that scroll factor values other than 1 are not taken in to consideration when
+		calculating physics collisions. Bodies always collide based on their world position, but changing
+		the scroll factor is a visual adjustment to where the textures are rendered, which can offset
+		them from physics bodies if not accounted for in your code.
+	**/
+	var scrollFactorX : Float;
+	/**
+		The vertical scroll factor of this Game Object.
+		
+		The scroll factor controls the influence of the movement of a Camera upon this Game Object.
+		
+		When a camera scrolls it will change the location at which this Game Object is rendered on-screen.
+		It does not change the Game Objects actual position values.
+		
+		A value of 1 means it will move exactly in sync with a camera.
+		A value of 0 means it will not move at all, even if the camera moves.
+		Other values control the degree to which the camera movement is mapped to this Game Object.
+		
+		Please be aware that scroll factor values other than 1 are not taken in to consideration when
+		calculating physics collisions. Bodies always collide based on their world position, but changing
+		the scroll factor is a visual adjustment to where the textures are rendered, which can offset
+		them from physics bodies if not accounted for in your code.
+	**/
+	var scrollFactorY : Float;
+	/**
+		Sets the scroll factor of this Game Object.
+		
+		The scroll factor controls the influence of the movement of a Camera upon this Game Object.
+		
+		When a camera scrolls it will change the location at which this Game Object is rendered on-screen.
+		It does not change the Game Objects actual position values.
+		
+		A value of 1 means it will move exactly in sync with a camera.
+		A value of 0 means it will not move at all, even if the camera moves.
+		Other values control the degree to which the camera movement is mapped to this Game Object.
+		
+		Please be aware that scroll factor values other than 1 are not taken in to consideration when
+		calculating physics collisions. Bodies always collide based on their world position, but changing
+		the scroll factor is a visual adjustment to where the textures are rendered, which can offset
+		them from physics bodies if not accounted for in your code.
+	**/
+	function setScrollFactor(x:Float, ?y:Float):TilemapLayer;
 	/**
 		The x position of this Game Object.
 	**/
@@ -700,7 +889,11 @@ package global.phaser.tilemaps;
 	/**
 		Sets the position of this Game Object.
 	**/
-	function setPosition(?x:Float, ?y:Float, ?z:Float, ?w:Float):StaticTilemapLayer;
+	function setPosition(?x:Float, ?y:Float, ?z:Float, ?w:Float):TilemapLayer;
+	/**
+		Copies an object's coordinates to this Game Object's position.
+	**/
+	function copyPosition(source:ts.AnyOf3<global.phaser.types.math.Vector2Like, global.phaser.types.math.Vector3Like, global.phaser.types.math.Vector4Like>):TilemapLayer;
 	/**
 		Sets the position of this Game Object to be a random position within the confines of
 		the given area.
@@ -710,38 +903,38 @@ package global.phaser.tilemaps;
 		The position does not factor in the size of this Game Object, meaning that only the origin is
 		guaranteed to be within the area.
 	**/
-	function setRandomPosition(?x:Float, ?y:Float, ?width:Float, ?height:Float):StaticTilemapLayer;
+	function setRandomPosition(?x:Float, ?y:Float, ?width:Float, ?height:Float):TilemapLayer;
 	/**
 		Sets the rotation of this Game Object.
 	**/
-	function setRotation(?radians:Float):StaticTilemapLayer;
+	function setRotation(?radians:Float):TilemapLayer;
 	/**
 		Sets the angle of this Game Object.
 	**/
-	function setAngle(?degrees:Float):StaticTilemapLayer;
+	function setAngle(?degrees:Float):TilemapLayer;
 	/**
 		Sets the scale of this Game Object.
 	**/
-	function setScale(x:Float, ?y:Float):StaticTilemapLayer;
+	function setScale(x:Float, ?y:Float):TilemapLayer;
 	/**
 		Sets the x position of this Game Object.
 	**/
-	function setX(?value:Float):StaticTilemapLayer;
+	function setX(?value:Float):TilemapLayer;
 	/**
 		Sets the y position of this Game Object.
 	**/
-	function setY(?value:Float):StaticTilemapLayer;
+	function setY(?value:Float):TilemapLayer;
 	/**
 		Sets the z position of this Game Object.
 		
 		Note: The z position does not control the rendering order of 2D Game Objects. Use
 		{@link Phaser.GameObjects.Components.Depth#setDepth} instead.
 	**/
-	function setZ(?value:Float):StaticTilemapLayer;
+	function setZ(?value:Float):TilemapLayer;
 	/**
 		Sets the w position of this Game Object.
 	**/
-	function setW(?value:Float):StaticTilemapLayer;
+	function setW(?value:Float):TilemapLayer;
 	/**
 		Gets the local transform matrix for this Game Object.
 	**/
@@ -750,6 +943,17 @@ package global.phaser.tilemaps;
 		Gets the world transform matrix for this Game Object, factoring in any parent Containers.
 	**/
 	function getWorldTransformMatrix(?tempMatrix:global.phaser.gameobjects.components.TransformMatrix, ?parentMatrix:global.phaser.gameobjects.components.TransformMatrix):global.phaser.gameobjects.components.TransformMatrix;
+	/**
+		Takes the given `x` and `y` coordinates and converts them into local space for this
+		Game Object, taking into account parent and local transforms, and the Display Origin.
+		
+		The returned Vector2 contains the translated point in its properties.
+		
+		A Camera needs to be provided in order to handle modified scroll factors. If no
+		camera is specified, it will use the `main` camera from the Scene to which this
+		Game Object belongs.
+	**/
+	function getLocalPoint(x:Float, y:Float, ?point:global.phaser.math.Vector2, ?camera:global.phaser.cameras.scene2d.Camera):global.phaser.math.Vector2;
 	/**
 		Gets the sum total rotation of all of this Game Objects parent Containers.
 		
@@ -767,71 +971,17 @@ package global.phaser.tilemaps;
 		
 		An invisible Game Object will skip rendering, but will still process update logic.
 	**/
-	function setVisible(value:Bool):StaticTilemapLayer;
-	/**
-		The horizontal scroll factor of this Game Object.
-		
-		The scroll factor controls the influence of the movement of a Camera upon this Game Object.
-		
-		When a camera scrolls it will change the location at which this Game Object is rendered on-screen.
-		It does not change the Game Objects actual position values.
-		
-		A value of 1 means it will move exactly in sync with a camera.
-		A value of 0 means it will not move at all, even if the camera moves.
-		Other values control the degree to which the camera movement is mapped to this Game Object.
-		
-		Please be aware that scroll factor values other than 1 are not taken in to consideration when
-		calculating physics collisions. Bodies always collide based on their world position, but changing
-		the scroll factor is a visual adjustment to where the textures are rendered, which can offset
-		them from physics bodies if not accounted for in your code.
-	**/
-	var scrollFactorX : Float;
-	/**
-		The vertical scroll factor of this Game Object.
-		
-		The scroll factor controls the influence of the movement of a Camera upon this Game Object.
-		
-		When a camera scrolls it will change the location at which this Game Object is rendered on-screen.
-		It does not change the Game Objects actual position values.
-		
-		A value of 1 means it will move exactly in sync with a camera.
-		A value of 0 means it will not move at all, even if the camera moves.
-		Other values control the degree to which the camera movement is mapped to this Game Object.
-		
-		Please be aware that scroll factor values other than 1 are not taken in to consideration when
-		calculating physics collisions. Bodies always collide based on their world position, but changing
-		the scroll factor is a visual adjustment to where the textures are rendered, which can offset
-		them from physics bodies if not accounted for in your code.
-	**/
-	var scrollFactorY : Float;
-	/**
-		Sets the scroll factor of this Game Object.
-		
-		The scroll factor controls the influence of the movement of a Camera upon this Game Object.
-		
-		When a camera scrolls it will change the location at which this Game Object is rendered on-screen.
-		It does not change the Game Objects actual position values.
-		
-		A value of 1 means it will move exactly in sync with a camera.
-		A value of 0 means it will not move at all, even if the camera moves.
-		Other values control the degree to which the camera movement is mapped to this Game Object.
-		
-		Please be aware that scroll factor values other than 1 are not taken in to consideration when
-		calculating physics collisions. Bodies always collide based on their world position, but changing
-		the scroll factor is a visual adjustment to where the textures are rendered, which can offset
-		them from physics bodies if not accounted for in your code.
-	**/
-	function setScrollFactor(x:Float, ?y:Float):StaticTilemapLayer;
+	function setVisible(value:Bool):TilemapLayer;
 	/**
 		Sets the `active` property of this Game Object and returns this Game Object for further chaining.
 		A Game Object with its `active` property set to `true` will be updated by the Scenes UpdateList.
 	**/
-	function setActive(value:Bool):StaticTilemapLayer;
+	function setActive(value:Bool):TilemapLayer;
 	/**
 		Sets the `name` property of this Game Object and returns this Game Object for further chaining.
 		The `name` property is not populated by Phaser and is presented for your own use.
 	**/
-	function setName(value:String):StaticTilemapLayer;
+	function setName(value:String):TilemapLayer;
 	/**
 		Sets the current state of this Game Object.
 		
@@ -842,11 +992,11 @@ package global.phaser.tilemaps;
 		in your game code), but could also be a string. It is recommended to keep it light and simple.
 		If you need to store complex data about your Game Object, look at using the Data Component instead.
 	**/
-	function setState(value:ts.AnyOf2<String, Float>):StaticTilemapLayer;
+	function setState(value:ts.AnyOf2<String, Float>):TilemapLayer;
 	/**
 		Adds a Data Manager component to this Game Object.
 	**/
-	function setDataEnabled():StaticTilemapLayer;
+	function setDataEnabled():TilemapLayer;
 	/**
 		Allows you to store a key value pair within this Game Objects Data Manager.
 		
@@ -886,7 +1036,7 @@ package global.phaser.tilemaps;
 		Please note that the data keys are case-sensitive and must be valid JavaScript Object property strings.
 		This means the keys `gold` and `Gold` are treated as two unique values within the Data Manager.
 	**/
-	function setData(key:ts.AnyOf2<String, Dynamic>, ?data:Dynamic):StaticTilemapLayer;
+	function setData(key:ts.AnyOf2<String, Dynamic>, ?data:Dynamic):TilemapLayer;
 	/**
 		Increase a value for the given key within this Game Objects Data Manager. If the key doesn't already exist in the Data Manager then it is increased from 0.
 		
@@ -897,7 +1047,7 @@ package global.phaser.tilemaps;
 		
 		When the value is first set, a `setdata` event is emitted from this Game Object.
 	**/
-	function incData(key:ts.AnyOf2<String, Dynamic>, ?data:Dynamic):StaticTilemapLayer;
+	function incData(key:ts.AnyOf2<String, Dynamic>, ?data:Dynamic):TilemapLayer;
 	/**
 		Toggle a boolean value for the given key within this Game Objects Data Manager. If the key doesn't already exist in the Data Manager then it is toggled from false.
 		
@@ -908,7 +1058,7 @@ package global.phaser.tilemaps;
 		
 		When the value is first set, a `setdata` event is emitted from this Game Object.
 	**/
-	function toggleData(key:ts.AnyOf2<String, Dynamic>):StaticTilemapLayer;
+	function toggleData(key:ts.AnyOf2<String, Dynamic>):TilemapLayer;
 	/**
 		Pass this Game Object to the Input Manager to enable it for Input.
 		
@@ -922,7 +1072,7 @@ package global.phaser.tilemaps;
 		
 		You can also provide an Input Configuration Object as the only argument to this method.
 	**/
-	function setInteractive(?shape:Dynamic, ?callback:global.phaser.types.input.HitAreaCallback, ?dropZone:Bool):StaticTilemapLayer;
+	function setInteractive(?hitArea:Dynamic, ?callback:global.phaser.types.input.HitAreaCallback, ?dropZone:Bool):TilemapLayer;
 	/**
 		If this Game Object has previously been enabled for input, this will disable it.
 		
@@ -932,7 +1082,7 @@ package global.phaser.tilemaps;
 		
 		If want to completely remove interaction from this Game Object then use `removeInteractive` instead.
 	**/
-	function disableInteractive():StaticTilemapLayer;
+	function disableInteractive():TilemapLayer;
 	/**
 		If this Game Object has previously been enabled for input, this will queue it
 		for removal, causing it to no longer be interactive. The removal happens on
@@ -953,30 +1103,30 @@ package global.phaser.tilemaps;
 		being used. I.e.: `sprite.input.hitArea.setSize(width, height)` (assuming the
 		shape is a Rectangle, which it is by default.)
 	**/
-	function removeInteractive():StaticTilemapLayer;
+	function removeInteractive():TilemapLayer;
 	/**
 		Add a listener for a given event.
 	**/
-	function on(event:ts.AnyOf2<String, js.lib.Symbol>, fn:haxe.Constraints.Function, ?context:Dynamic):StaticTilemapLayer;
+	function on(event:ts.AnyOf2<String, js.lib.Symbol>, fn:haxe.Constraints.Function, ?context:Dynamic):TilemapLayer;
 	/**
 		Add a listener for a given event.
 	**/
-	function addListener(event:ts.AnyOf2<String, js.lib.Symbol>, fn:haxe.Constraints.Function, ?context:Dynamic):StaticTilemapLayer;
+	function addListener(event:ts.AnyOf2<String, js.lib.Symbol>, fn:haxe.Constraints.Function, ?context:Dynamic):TilemapLayer;
 	/**
 		Add a one-time listener for a given event.
 	**/
-	function once(event:ts.AnyOf2<String, js.lib.Symbol>, fn:haxe.Constraints.Function, ?context:Dynamic):StaticTilemapLayer;
+	function once(event:ts.AnyOf2<String, js.lib.Symbol>, fn:haxe.Constraints.Function, ?context:Dynamic):TilemapLayer;
 	/**
 		Remove the listeners of a given event.
 	**/
-	function removeListener(event:ts.AnyOf2<String, js.lib.Symbol>, ?fn:haxe.Constraints.Function, ?context:Dynamic, ?once:Bool):StaticTilemapLayer;
+	function removeListener(event:ts.AnyOf2<String, js.lib.Symbol>, ?fn:haxe.Constraints.Function, ?context:Dynamic, ?once:Bool):TilemapLayer;
 	/**
 		Remove the listeners of a given event.
 	**/
-	function off(event:ts.AnyOf2<String, js.lib.Symbol>, ?fn:haxe.Constraints.Function, ?context:Dynamic, ?once:Bool):StaticTilemapLayer;
+	function off(event:ts.AnyOf2<String, js.lib.Symbol>, ?fn:haxe.Constraints.Function, ?context:Dynamic, ?once:Bool):TilemapLayer;
 	/**
 		Remove all listeners, or those of the specified event.
 	**/
-	function removeAllListeners(?event:ts.AnyOf2<String, js.lib.Symbol>):StaticTilemapLayer;
-	static var prototype : StaticTilemapLayer;
+	function removeAllListeners(?event:ts.AnyOf2<String, js.lib.Symbol>):TilemapLayer;
+	static var prototype : TilemapLayer;
 }

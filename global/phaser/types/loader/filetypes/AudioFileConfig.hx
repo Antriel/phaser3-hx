@@ -6,18 +6,18 @@ typedef AudioFileConfig = {
 	**/
 	var key : String;
 	/**
-		The absolute or relative URL to load the file from.
+		The absolute or relative URLs to load the audio files from.
 	**/
 	@:optional
-	var urlConfig : String;
+	var url : ts.AnyOf2<String, Array<String>>;
 	/**
 		Extra XHR Settings specifically for this file.
 	**/
 	@:optional
 	var xhrSettings : global.phaser.types.loader.XHRSettingsObject;
 	/**
-		The AudioContext this file will use to process itself.
+		The optional AudioContext this file will use to process itself.
 	**/
 	@:optional
-	var audioContext : js.html.audio.AudioContext;
+	var context : js.html.audio.AudioContext;
 };

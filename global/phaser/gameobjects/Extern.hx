@@ -11,7 +11,7 @@ package global.phaser.gameobjects;
 	
 	The WebGL context is then left is a 'clean' state, ready for you to bind your own shaders,
 	or draw to it, whatever you wish to do. Once you've finished, you should free-up any
-	of your resources. The Extern will then rebind the Phaser pipeline and carry on 
+	of your resources. The Extern will then rebind the Phaser pipeline and carry on
 	rendering the display list.
 	
 	Although this object has lots of properties such as Alpha, Blend Mode and Tint, none of
@@ -367,7 +367,34 @@ package global.phaser.gameobjects;
 	**/
 	function setFrame(frame:ts.AnyOf2<String, Float>, ?updateSize:Bool, ?updateOrigin:Bool):Extern;
 	/**
-		Fill or additive?
+		The tint value being applied to the top-left vertice of the Game Object.
+		This value is interpolated from the corner to the center of the Game Object.
+		The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+	**/
+	var tintTopLeft : Float;
+	/**
+		The tint value being applied to the top-right vertice of the Game Object.
+		This value is interpolated from the corner to the center of the Game Object.
+		The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+	**/
+	var tintTopRight : Float;
+	/**
+		The tint value being applied to the bottom-left vertice of the Game Object.
+		This value is interpolated from the corner to the center of the Game Object.
+		The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+	**/
+	var tintBottomLeft : Float;
+	/**
+		The tint value being applied to the bottom-right vertice of the Game Object.
+		This value is interpolated from the corner to the center of the Game Object.
+		The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+	**/
+	var tintBottomRight : Float;
+	/**
+		The tint fill mode.
+		
+		`false` = An additive tint (the default), where vertices colors are blended with the texture.
+		`true` = A fill tint, where the vertices colors replace the texture, but respects texture alpha.
 	**/
 	var tintFill : Bool;
 	/**
@@ -413,32 +440,15 @@ package global.phaser.gameobjects;
 	**/
 	function setTintFill(?topLeft:Float, ?topRight:Float, ?bottomLeft:Float, ?bottomRight:Float):Extern;
 	/**
-		The tint value being applied to the top-left of the Game Object.
-		This value is interpolated from the corner to the center of the Game Object.
-	**/
-	var tintTopLeft : Float;
-	/**
-		The tint value being applied to the top-right of the Game Object.
-		This value is interpolated from the corner to the center of the Game Object.
-	**/
-	var tintTopRight : Float;
-	/**
-		The tint value being applied to the bottom-left of the Game Object.
-		This value is interpolated from the corner to the center of the Game Object.
-	**/
-	var tintBottomLeft : Float;
-	/**
-		The tint value being applied to the bottom-right of the Game Object.
-		This value is interpolated from the corner to the center of the Game Object.
-	**/
-	var tintBottomRight : Float;
-	/**
 		The tint value being applied to the whole of the Game Object.
 		This property is a setter-only. Use the properties `tintTopLeft` etc to read the current tint value.
 	**/
 	var tint : Float;
 	/**
-		Does this Game Object have a tint applied to it or not?
+		Does this Game Object have a tint applied?
+		
+		It checks to see if the 4 tint properties are set to the value 0xffffff
+		and that the `tintFill` property is `false`. This indicates that a Game Object isn't tinted.
 	**/
 	final isTinted : Bool;
 	/**
@@ -499,6 +509,10 @@ package global.phaser.gameobjects;
 	**/
 	function setPosition(?x:Float, ?y:Float, ?z:Float, ?w:Float):Extern;
 	/**
+		Copies an object's coordinates to this Game Object's position.
+	**/
+	function copyPosition(source:ts.AnyOf3<global.phaser.types.math.Vector2Like, global.phaser.types.math.Vector3Like, global.phaser.types.math.Vector4Like>):Extern;
+	/**
 		Sets the position of this Game Object to be a random position within the confines of
 		the given area.
 		
@@ -547,6 +561,17 @@ package global.phaser.gameobjects;
 		Gets the world transform matrix for this Game Object, factoring in any parent Containers.
 	**/
 	function getWorldTransformMatrix(?tempMatrix:global.phaser.gameobjects.components.TransformMatrix, ?parentMatrix:global.phaser.gameobjects.components.TransformMatrix):global.phaser.gameobjects.components.TransformMatrix;
+	/**
+		Takes the given `x` and `y` coordinates and converts them into local space for this
+		Game Object, taking into account parent and local transforms, and the Display Origin.
+		
+		The returned Vector2 contains the translated point in its properties.
+		
+		A Camera needs to be provided in order to handle modified scroll factors. If no
+		camera is specified, it will use the `main` camera from the Scene to which this
+		Game Object belongs.
+	**/
+	function getLocalPoint(x:Float, y:Float, ?point:global.phaser.math.Vector2, ?camera:global.phaser.cameras.scene2d.Camera):global.phaser.math.Vector2;
 	/**
 		Gets the sum total rotation of all of this Game Objects parent Containers.
 		
@@ -665,7 +690,7 @@ package global.phaser.gameobjects;
 		
 		You can also provide an Input Configuration Object as the only argument to this method.
 	**/
-	function setInteractive(?shape:Dynamic, ?callback:global.phaser.types.input.HitAreaCallback, ?dropZone:Bool):Extern;
+	function setInteractive(?hitArea:Dynamic, ?callback:global.phaser.types.input.HitAreaCallback, ?dropZone:Bool):Extern;
 	/**
 		If this Game Object has previously been enabled for input, this will disable it.
 		

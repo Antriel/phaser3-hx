@@ -5,6 +5,7 @@ package global.phaser.scenes;
 	
 	The Scene Manager is a Game level system, responsible for creating, processing and updating all of the
 	Scenes in a Game instance.
+	ó *
 **/
 @:native("Phaser.Scenes.SceneManager") extern class SceneManager {
 	function new(game:global.phaser.Game, sceneConfig:Dynamic);

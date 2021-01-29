@@ -39,4 +39,9 @@ typedef SoundConfig = {
 	**/
 	@:optional
 	var delay : Float;
+	/**
+		A value between -1 (full left pan) and 1 (full right pan). 0 means no pan.
+	**/
+	@:optional
+	var pan : Float;
 };

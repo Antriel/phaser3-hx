@@ -161,7 +161,7 @@ package global.phaser.input;
 	**/
 	var downY : Float;
 	/**
-		Time when Button 1 (left button), or Touch, was pressed, used for dragging objects.
+		The Event timestamp when the first button, or Touch input, was pressed. Used for dragging objects.
 	**/
 	var downTime : Float;
 	/**
@@ -173,7 +173,7 @@ package global.phaser.input;
 	**/
 	var upY : Float;
 	/**
-		Time when Button 1 (left button), or Touch, was released, used for dragging objects.
+		The Event timestamp when the final button, or Touch input, was released. Used for dragging objects.
 	**/
 	var upTime : Float;
 	/**
@@ -328,7 +328,7 @@ package global.phaser.input;
 		duration since the button was pressed down.
 		
 		If no button is held down, it will return the last recorded duration, based on the time
-		the Pointer button was released.
+		the last button on the Pointer was released.
 	**/
 	function getDuration():Float;
 	/**

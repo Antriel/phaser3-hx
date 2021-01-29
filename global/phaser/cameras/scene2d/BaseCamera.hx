@@ -55,12 +55,6 @@ package global.phaser.cameras.scene2d;
 	**/
 	var name : String;
 	/**
-		This property is un-used in v3.16.
-		
-		The resolution of the Game, used in most Camera calculations.
-	**/
-	final resolution : Float;
-	/**
 		Should this camera round its pixel values to integers?
 	**/
 	var roundPixels : Bool;
@@ -148,6 +142,24 @@ package global.phaser.cameras.scene2d;
 	**/
 	var mask : ts.AnyOf2<global.phaser.display.masks.BitmapMask, global.phaser.display.masks.GeometryMask>;
 	/**
+		This array is populated with all of the Game Objects that this Camera has rendered
+		in the previous (or current, depending on when you inspect it) frame.
+		
+		It is cleared at the start of `Camera.preUpdate`, or if the Camera is destroyed.
+		
+		You should not modify this array as it is used internally by the input system,
+		however you can read it as required. Note that Game Objects may appear in this
+		list multiple times if they belong to multiple non-exclusive Containers.
+	**/
+	var renderList : Array<global.phaser.gameobjects.GameObject>;
+	/**
+		Adds the given Game Object to this cameras render list.
+		
+		This is invoked during the rendering stage. Only objects that are actually rendered
+		will appear in the render list.
+	**/
+	function addToRenderList(child:global.phaser.gameobjects.GameObject):Void;
+	/**
 		Set the Alpha level of this Camera. The alpha controls the opacity of the Camera as it renders.
 		Alpha values are provided as a float between 0, fully transparent, and 1, fully opaque.
 	**/
@@ -209,7 +221,7 @@ package global.phaser.cameras.scene2d;
 	/**
 		Internal preRender step.
 	**/
-	private function preRender(resolution:Float):Void;
+	private function preRender():Void;
 	/**
 		Takes an x value and checks it's within the range of the Camera bounds, adjusting if required.
 		Do not call this method if you are not using camera bounds.
@@ -292,8 +304,6 @@ package global.phaser.cameras.scene2d;
 	function setRoundPixels(value:Bool):BaseCamera;
 	/**
 		Sets the Scene the Camera is bound to.
-		
-		Also populates the `resolution` property and updates the internal size values.
 	**/
 	function setScene(scene:global.phaser.Scene):BaseCamera;
 	/**
@@ -333,8 +343,10 @@ package global.phaser.cameras.scene2d;
 		A value of 1 means 'no zoom' and is the default.
 		
 		Changing the zoom does not impact the Camera viewport in any way, it is only applied during rendering.
+		
+		As of Phaser 3.50 you can now set the horizontal and vertical zoom values independently.
 	**/
-	function setZoom(?value:Float):BaseCamera;
+	function setZoom(?x:Float, ?y:Float):BaseCamera;
 	/**
 		Sets the mask to be applied to this Camera during rendering.
 		
@@ -346,8 +358,6 @@ package global.phaser.cameras.scene2d;
 		
 		Masks have no impact on physics or input detection. They are purely a rendering component
 		that allows you to limit what is visible during the render pass.
-		
-		Note: You cannot mask a Camera that has `renderToTexture` set.
 	**/
 	function setMask(mask:ts.AnyOf2<global.phaser.display.masks.BitmapMask, global.phaser.display.masks.GeometryMask>, ?fixedPosition:Bool):BaseCamera;
 	/**
@@ -428,6 +438,30 @@ package global.phaser.cameras.scene2d;
 		Be careful to never set this value to zero.
 	**/
 	var zoom : Float;
+	/**
+		The Camera horizontal zoom value. Change this value to zoom in, or out of, a Scene.
+		
+		A value of 0.5 would zoom the Camera out, so you can now see twice as much
+		of the Scene as before. A value of 2 would zoom the Camera in, so every pixel
+		now takes up 2 pixels when rendered.
+		
+		Set to 1 to return to the default zoom level.
+		
+		Be careful to never set this value to zero.
+	**/
+	var zoomX : Float;
+	/**
+		The Camera vertical zoom value. Change this value to zoom in, or out of, a Scene.
+		
+		A value of 0.5 would zoom the Camera out, so you can now see twice as much
+		of the Scene as before. A value of 2 would zoom the Camera in, so every pixel
+		now takes up 2 pixels when rendered.
+		
+		Set to 1 to return to the default zoom level.
+		
+		Be careful to never set this value to zero.
+	**/
+	var zoomY : Float;
 	/**
 		The horizontal position of the center of the Camera's viewport, relative to the left of the game canvas.
 	**/

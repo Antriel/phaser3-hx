@@ -15,6 +15,10 @@ package global.phaser.structs;
 @:native("Phaser.Structs.ProcessQueue") extern class ProcessQueue<T> extends global.phaser.events.EventEmitter {
 	function new();
 	/**
+		If `true` only unique objects will be allowed in the queue.
+	**/
+	var checkQueue : Bool;
+	/**
 		Adds a new item to the Process Queue.
 		
 		The item is added to the pending list and made active in the next update.

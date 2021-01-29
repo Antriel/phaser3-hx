@@ -9,7 +9,7 @@ package global.phaser.renderer.webgl;
 	unexpected behavior. It's recommended that WebGL interaction is done through
 	WebGLRenderer and/or WebGLPipeline.
 **/
-@:native("Phaser.Renderer.WebGL.WebGLRenderer") extern class WebGLRenderer {
+@:native("Phaser.Renderer.WebGL.WebGLRenderer") extern class WebGLRenderer extends global.phaser.events.EventEmitter {
 	function new(game:global.phaser.Game);
 	/**
 		The local configuration settings of this WebGL Renderer.
@@ -23,6 +23,18 @@ package global.phaser.renderer.webgl;
 		A constant which allows the renderer to be easily identified as a WebGL Renderer.
 	**/
 	var type : Float;
+	/**
+		An instance of the Pipeline Manager class, that handles all WebGL Pipelines.
+		
+		Use this to manage all of your interactions with pipelines, such as adding, getting,
+		setting and rendering them.
+		
+		The Pipeline Manager class is created in the `init` method and then populated
+		with pipelines during the `boot` method.
+		
+		Prior to Phaser v3.50.0 this was just a plain JavaScript object, not a class.
+	**/
+	var pipelines : PipelineManager;
 	/**
 		The width of the canvas being rendered to.
 		This is populated in the onResize event handler.
@@ -44,17 +56,9 @@ package global.phaser.renderer.webgl;
 	**/
 	var blendModes : Array<Dynamic>;
 	/**
-		Keeps track of any WebGLTexture created with the current WebGLRenderingContext
-	**/
-	var nativeTextures : Array<Dynamic>;
-	/**
 		This property is set to `true` if the WebGL context of the renderer is lost.
 	**/
 	var contextLost : Bool;
-	/**
-		This object will store all pipelines created through addPipeline
-	**/
-	var pipelines : Dynamic;
 	/**
 		Details about the currently scheduled snapshot.
 		
@@ -62,33 +66,51 @@ package global.phaser.renderer.webgl;
 	**/
 	var snapshotState : global.phaser.types.renderer.snapshot.SnapshotState;
 	/**
-		Cached value for the last texture unit that was used
+		Cached value for the last texture unit that was used.
 	**/
-	var currentActiveTextureUnit : Float;
+	var currentActiveTexture : Float;
 	/**
-		An array of the last texture handles that were bound to the WebGLRenderingContext
+		Contains the current starting active texture unit.
+		This value is constantly updated and should be treated as read-only by your code.
 	**/
-	var currentTextures : Array<Dynamic>;
+	var startActiveTexture : Float;
 	/**
-		Current framebuffer in use
+		The maximum number of textures the GPU can handle. The minimum under the WebGL1 spec is 8.
+		This is set via the Game Config `maxTextures` property and should never be changed after boot.
+	**/
+	var maxTextures : Float;
+	/**
+		An array of the available WebGL texture units, used to populate the uSampler uniforms.
+		
+		This array is populated during the init phase and should never be changed after boot.
+	**/
+	var textureIndexes : Array<Dynamic>;
+	/**
+		An array of default temporary WebGL Textures.
+		
+		This array is populated during the init phase and should never be changed after boot.
+	**/
+	var tempTextures : Array<Dynamic>;
+	/**
+		The currently bound texture at texture unit zero, if any.
+	**/
+	var textureZero : js.html.webgl.Texture;
+	/**
+		The currently bound normal map texture at texture unit one, if any.
+	**/
+	var normalTexture : js.html.webgl.Texture;
+	/**
+		The currently bound framebuffer in use.
 	**/
 	var currentFramebuffer : js.html.webgl.Framebuffer;
 	/**
-		Current WebGLPipeline in use
+		A stack into which the frame buffer objects are pushed and popped.
 	**/
-	var currentPipeline : WebGLPipeline;
+	var fboStack : Array<js.html.webgl.Framebuffer>;
 	/**
-		Current WebGLProgram in use
+		Current WebGLProgram in use.
 	**/
 	var currentProgram : js.html.webgl.Program;
-	/**
-		Current WebGLBuffer (Vertex buffer) in use
-	**/
-	var currentVertexBuffer : js.html.webgl.Buffer;
-	/**
-		Current WebGLBuffer (Index buffer) in use
-	**/
-	var currentIndexBuffer : js.html.webgl.Buffer;
 	/**
 		Current blend mode in use
 	**/
@@ -120,21 +142,32 @@ package global.phaser.renderer.webgl;
 	**/
 	var gl : js.html.webgl.RenderingContext;
 	/**
-		Array of strings that indicate which WebGL extensions are supported by the browser
+		Array of strings that indicate which WebGL extensions are supported by the browser.
+		This is populated in the `boot` method.
 	**/
-	var supportedExtensions : Dynamic;
+	var supportedExtensions : Array<String>;
 	/**
-		Extensions loaded into the current context
+		If the browser supports the `ANGLE_instanced_arrays` extension, this property will hold
+		a reference to the glExtension for it.
+	**/
+	var instancedArraysExtension : js.html.webgl.extension.ANGLEInstancedArrays;
+	/**
+		If the browser supports the `OES_vertex_array_object` extension, this property will hold
+		a reference to the glExtension for it.
+	**/
+	var vaoExtension : js.html.webgl.extension.OESVertexArrayObject;
+	/**
+		The WebGL Extensions loaded into the current context.
 	**/
 	var extensions : Dynamic;
 	/**
-		Stores the current WebGL component formats for further use
+		Stores the current WebGL component formats for further use.
 	**/
 	var glFormats : Array<Dynamic>;
 	/**
 		Stores the supported WebGL texture compression formats.
 	**/
-	var compression : Array<Dynamic>;
+	var compression : Dynamic;
 	/**
 		Cached drawing buffer height to reduce gl calls.
 	**/
@@ -145,9 +178,10 @@ package global.phaser.renderer.webgl;
 	**/
 	final blankTexture : js.html.webgl.Texture;
 	/**
-		A default Camera used in calls when no other camera has been provided.
+		A pure white 4x4 texture, as used by the Graphics system where needed.
+		This is set in the `boot` method.
 	**/
-	var defaultCamera : global.phaser.cameras.scene2d.BaseCamera;
+	final whiteTexture : js.html.webgl.Texture;
 	/**
 		The total number of masks currently stacked.
 	**/
@@ -185,6 +219,10 @@ package global.phaser.renderer.webgl;
 	**/
 	var nextTypeMatch : Bool;
 	/**
+		Is the Game Object being currently rendered the final one in the list?
+	**/
+	var finalType : Bool;
+	/**
 		The mipmap magFilter to be used when creating textures.
 		
 		You can specify this as a string in the game config, i.e.:
@@ -206,17 +244,77 @@ package global.phaser.renderer.webgl;
 	**/
 	var mipmapFilter : Float;
 	/**
+		The number of times the renderer had to flush this frame, due to running out of texture units.
+	**/
+	var textureFlush : Float;
+	/**
+		Are the WebGL Textures in their default state?
+		
+		Used to avoid constant gl binds.
+	**/
+	var isTextureClean : Bool;
+	/**
+		Has this renderer fully booted yet?
+	**/
+	var isBooted : Bool;
+	/**
+		A Render Target you can use to capture the current state of the Renderer.
+		
+		A Render Target encapsulates a framebuffer and texture for the WebGL Renderer.
+	**/
+	var renderTarget : RenderTarget;
+	/**
+		The global game Projection matrix, used by shaders as 'uProjectionMatrix' uniform.
+	**/
+	var projectionMatrix : global.phaser.math.Matrix4;
+	/**
+		The cached width of the Projection matrix.
+	**/
+	var projectionWidth : Float;
+	/**
+		The cached height of the Projection matrix.
+	**/
+	var projectionHeight : Float;
+	/**
 		Creates a new WebGLRenderingContext and initializes all internal state.
 	**/
 	function init(config:Dynamic):WebGLRenderer;
 	/**
 		The event handler that manages the `resize` event dispatched by the Scale Manager.
 	**/
-	function onResize(gameSize:global.phaser.structs.Size, baseSize:global.phaser.structs.Size, displaySize:global.phaser.structs.Size, ?resolution:Float):Void;
+	function onResize(gameSize:global.phaser.structs.Size, baseSize:global.phaser.structs.Size):Void;
+	/**
+		Binds the WebGL Renderers Render Target, so all drawn content is now redirected to it.
+		
+		Make sure to call `endCapture` when you are finished.
+	**/
+	function beginCapture(?width:Float, ?height:Float):Void;
+	/**
+		Unbinds the WebGL Renderers Render Target and returns it, stopping any further content being drawn to it.
+		
+		If the viewport or scissors were modified during the capture, you should reset them by calling
+		`resetViewport` and `resetScissor` accordingly.
+	**/
+	function endCapture():RenderTarget;
 	/**
 		Resizes the drawing buffer to match that required by the Scale Manager.
 	**/
-	function resize(?width:Float, ?height:Float, ?resolution:Float):WebGLRenderer;
+	function resize(?width:Float, ?height:Float):WebGLRenderer;
+	/**
+		Gets the aspect ratio of the WebGLRenderer dimensions.
+	**/
+	function getAspectRatio():Float;
+	/**
+		Sets the Projection Matrix of this renderer to the given dimensions.
+	**/
+	function setProjectionMatrix(width:Float, height:Float):WebGLRenderer;
+	/**
+		Resets the Projection Matrix back to this renderers width and height.
+		
+		This is called during `endCapture`, should the matrix have been changed
+		as a result of the capture process.
+	**/
+	function resetProjectionMatrix():Void;
 	/**
 		Checks if a WebGL extension is supported
 	**/
@@ -230,22 +328,6 @@ package global.phaser.renderer.webgl;
 	**/
 	function flush():Void;
 	/**
-		Checks if a pipeline is present in the current WebGLRenderer
-	**/
-	function hasPipeline(pipelineName:String):Bool;
-	/**
-		Returns the pipeline by name if the pipeline exists
-	**/
-	function getPipeline(pipelineName:String):WebGLPipeline;
-	/**
-		Removes a pipeline by name.
-	**/
-	function removePipeline(pipelineName:String):WebGLRenderer;
-	/**
-		Adds a pipeline instance into the collection of pipelines
-	**/
-	function addPipeline(pipelineName:String, pipelineInstance:WebGLPipeline):WebGLPipeline;
-	/**
 		Pushes a new scissor state. This is used to set nested scissor states.
 	**/
 	function pushScissor(x:Float, y:Float, width:Float, height:Float, ?drawingBufferHeight:Float):Array<Float>;
@@ -254,39 +336,22 @@ package global.phaser.renderer.webgl;
 	**/
 	function setScissor(x:Float, y:Float, width:Float, height:Float, ?drawingBufferHeight:Float):Void;
 	/**
+		Resets the gl scissor state to be whatever the current scissor is, if there is one, without
+		modifying the scissor stack.
+	**/
+	function resetScissor():Void;
+	/**
 		Pops the last scissor state and sets it.
 	**/
 	function popScissor():Void;
-	/**
-		Binds a WebGLPipeline and sets it as the current pipeline to be used.
-	**/
-	function setPipeline(pipelineInstance:WebGLPipeline, ?gameObject:global.phaser.gameobjects.GameObject):WebGLPipeline;
 	/**
 		Is there an active stencil mask?
 	**/
 	function hasActiveStencilMask():Bool;
 	/**
-		Use this to reset the gl context to the state that Phaser requires to continue rendering.
-		Calling this will:
-		
-		* Disable `DEPTH_TEST`, `CULL_FACE` and `STENCIL_TEST`.
-		* Clear the depth buffer and stencil buffers.
-		* Reset the viewport size.
-		* Reset the blend mode.
-		* Bind a blank texture as the active texture on texture unit zero.
-		* Rebinds the given pipeline instance.
-		
-		You should call this having previously called `clearPipeline` and then wishing to return
-		control to Phaser again.
+		Resets the gl viewport to the current renderer dimensions.
 	**/
-	function rebindPipeline(pipelineInstance:WebGLPipeline):Void;
-	/**
-		Flushes the current WebGLPipeline being used and then clears it, along with the
-		the current shader program and vertex buffer. Then resets the blend mode to NORMAL.
-		Call this before jumping to your own gl context handler, and then call `rebindPipeline` when
-		you wish to return control to Phaser again.
-	**/
-	function clearPipeline():Void;
+	function resetViewport():Void;
 	/**
 		Sets the blend mode to the value given.
 		
@@ -310,26 +375,84 @@ package global.phaser.renderer.webgl;
 	**/
 	function removeBlendMode(index:Float):WebGLRenderer;
 	/**
+		Activates the Texture Source and assigns it the next available texture unit.
+		If none are available, it will flush the current pipeline first.
+	**/
+	function setTextureSource(textureSource:global.phaser.textures.TextureSource):Float;
+	/**
+		Checks to see if the given diffuse and normal map textures are already bound, or not.
+	**/
+	function isNewNormalMap(texture:js.html.webgl.Texture, normalMap:js.html.webgl.Texture):Bool;
+	/**
+		Binds a texture directly to texture unit zero then activates it.
+		If the texture is already at unit zero, it skips the bind.
+		Make sure to call `clearTextureZero` after using this method.
+	**/
+	function setTextureZero(texture:js.html.webgl.Texture, ?flush:Bool):Void;
+	/**
+		Clears the texture that was directly bound to texture unit zero.
+	**/
+	function clearTextureZero():Void;
+	/**
+		Binds a texture directly to texture unit one then activates it.
+		If the texture is already at unit one, it skips the bind.
+		Make sure to call `clearNormalMap` after using this method.
+	**/
+	function setNormalMap(texture:js.html.webgl.Texture):Void;
+	/**
+		Clears the texture that was directly bound to texture unit one and
+		increases the start active texture counter.
+	**/
+	function clearNormalMap():Void;
+	/**
+		Activates each texture, in turn, then binds them all to `null`.
+	**/
+	function unbindTextures(?all:Bool):Void;
+	/**
+		Flushes the current pipeline, then resets the first two textures
+		back to the default temporary textures, resets the start active
+		counter and sets texture unit 1 as being active.
+	**/
+	function resetTextures(?all:Bool):Void;
+	/**
 		Binds a texture at a texture unit. If a texture is already
 		bound to that unit it will force a flush on the current pipeline.
 	**/
-	function setTexture2D(texture:js.html.webgl.Texture, textureUnit:Float, ?flush:Bool):WebGLRenderer;
+	function setTexture2D(texture:js.html.webgl.Texture):Float;
 	/**
-		Binds a framebuffer. If there was another framebuffer already bound it will force a pipeline flush.
+		Pushes a new framebuffer onto the FBO stack and makes it the currently bound framebuffer.
+		
+		If there was another framebuffer already bound it will force a pipeline flush.
+		
+		Call `popFramebuffer` to remove it again.
 	**/
-	function setFramebuffer(framebuffer:js.html.webgl.Framebuffer, ?updateScissor:Bool):WebGLRenderer;
+	function pushFramebuffer(framebuffer:js.html.webgl.Framebuffer, ?updateScissor:Bool, ?resetTextures:Bool, ?setViewport:Bool):WebGLRenderer;
 	/**
-		Binds a program. If there was another program already bound it will force a pipeline flush.
+		Sets the given framebuffer as the active and currently bound framebuffer.
+		
+		If there was another framebuffer already bound it will force a pipeline flush.
+		
+		Typically, you should call `pushFramebuffer` instead of this method.
 	**/
-	function setProgram(program:js.html.webgl.Program):WebGLRenderer;
+	function setFramebuffer(framebuffer:js.html.webgl.Framebuffer, ?updateScissor:Bool, ?resetTextures:Bool, ?setViewport:Bool):WebGLRenderer;
 	/**
-		Bounds a vertex buffer. If there is a vertex buffer already bound it'll force a pipeline flush.
+		Pops the previous framebuffer from the fbo stack and sets it.
 	**/
-	function setVertexBuffer(vertexBuffer:js.html.webgl.Buffer):WebGLRenderer;
+	function popFramebuffer(?updateScissor:Bool, ?resetTextures:Bool, ?setViewport:Bool):js.html.webgl.Framebuffer;
 	/**
-		Bounds a index buffer. If there is a index buffer already bound it'll force a pipeline flush.
+		Binds a shader program.
+		
+		If there was a different program already bound it will force a pipeline flush first.
+		
+		If the same program given to this method is already set as the current program, no change
+		will take place and this method will return `false`.
 	**/
-	function setIndexBuffer(indexBuffer:js.html.webgl.Buffer):WebGLRenderer;
+	function setProgram(program:js.html.webgl.Program):Bool;
+	/**
+		Rebinds whatever program `WebGLRenderer.currentProgram` is set as, without
+		changing anything, or flushing.
+	**/
+	function resetProgram():WebGLRenderer;
 	/**
 		Creates a texture from an image source. If the source is not valid it creates an empty texture.
 	**/
@@ -339,11 +462,13 @@ package global.phaser.renderer.webgl;
 	**/
 	function createTexture2D(mipLevel:Float, minFilter:Float, magFilter:Float, wrapT:Float, wrapS:Float, format:Float, pixels:Dynamic, width:Float, height:Float, ?pma:Bool, ?forceSize:Bool, ?flipY:Bool):js.html.webgl.Texture;
 	/**
-		Wrapper for creating WebGLFramebuffer.
+		Creates a WebGL Framebuffer object and optionally binds a depth stencil render buffer.
 	**/
-	function createFramebuffer(width:Float, height:Float, renderTexture:js.html.webgl.Texture, addDepthStencilBuffer:Bool):js.html.webgl.Framebuffer;
+	function createFramebuffer(width:Float, height:Float, renderTexture:js.html.webgl.Texture, ?addDepthStencilBuffer:Bool):js.html.webgl.Framebuffer;
 	/**
-		Wrapper for creating a WebGLProgram
+		Creates a WebGLProgram instance based on the given vertex and fragment shader source.
+		
+		Then compiles, attaches and links the program before returning it.
 	**/
 	function createProgram(vertexShader:String, fragmentShader:String):js.html.webgl.Program;
 	/**
@@ -355,9 +480,10 @@ package global.phaser.renderer.webgl;
 	**/
 	function createIndexBuffer(initialDataOrSize:js.lib.ArrayBuffer, bufferUsage:Float):js.html.webgl.Buffer;
 	/**
-		Removes the given texture from the nativeTextures array and then deletes it from the GPU.
+		Calls `GL.deleteTexture` on the given WebGLTexture and also optionally
+		resets the currently defined textures.
 	**/
-	function deleteTexture(texture:js.html.webgl.Texture):WebGLRenderer;
+	function deleteTexture(texture:js.html.webgl.Texture, ?reset:Bool):WebGLRenderer;
 	/**
 		Deletes a WebGLFramebuffer from the GL instance.
 	**/
@@ -377,7 +503,8 @@ package global.phaser.renderer.webgl;
 	function preRenderCamera(camera:global.phaser.cameras.scene2d.Camera):Void;
 	/**
 		Controls the post-render operations for the given camera.
-		Renders the foreground camera effects like flash and fading. It resets the current scissor state.
+		
+		Renders the foreground camera effects like flash and fading, then resets the current scissor state.
 	**/
 	function postRenderCamera(camera:global.phaser.cameras.scene2d.Camera):Void;
 	/**
@@ -387,14 +514,14 @@ package global.phaser.renderer.webgl;
 	/**
 		The core render step for a Scene Camera.
 		
-		Iterates through the given Game Object's array and renders them with the given Camera.
+		Iterates through the given array of Game Objects and renders them with the given Camera.
 		
 		This is called by the `CameraManager.render` method. The Camera Manager instance belongs to a Scene, and is invoked
 		by the Scene Systems.render method.
 		
 		This method is not called if `Camera.visible` is `false`, or `Camera.alpha` is zero.
 	**/
-	function render(scene:global.phaser.Scene, children:global.phaser.gameobjects.GameObject, interpolationPercentage:Float, camera:global.phaser.cameras.scene2d.Camera):Void;
+	function render(scene:global.phaser.Scene, children:Array<global.phaser.gameobjects.GameObject>, camera:global.phaser.cameras.scene2d.Camera):Void;
 	/**
 		The post-render step happens after all Cameras in all Scenes have been rendered.
 	**/
@@ -478,108 +605,34 @@ package global.phaser.renderer.webgl;
 	**/
 	function setTextureFilter(texture:Float, filter:Float):WebGLRenderer;
 	/**
-		Sets a 1f uniform value on the given shader.
-		
-		If the shader is not currently active, it is made active first.
-	**/
-	function setFloat1(program:js.html.webgl.Program, name:String, x:Float):WebGLRenderer;
-	/**
-		Sets the 2f uniform values on the given shader.
-		
-		If the shader is not currently active, it is made active first.
-	**/
-	function setFloat2(program:js.html.webgl.Program, name:String, x:Float, y:Float):WebGLRenderer;
-	/**
-		Sets the 3f uniform values on the given shader.
-		
-		If the shader is not currently active, it is made active first.
-	**/
-	function setFloat3(program:js.html.webgl.Program, name:String, x:Float, y:Float, z:Float):WebGLRenderer;
-	/**
-		Sets the 4f uniform values on the given shader.
-		
-		If the shader is not currently active, it is made active first.
-	**/
-	function setFloat4(program:js.html.webgl.Program, name:String, x:Float, y:Float, z:Float, w:Float):WebGLRenderer;
-	/**
-		Sets the value of a 1fv uniform variable in the given WebGLProgram.
-		
-		If the shader is not currently active, it is made active first.
-	**/
-	function setFloat1v(program:js.html.webgl.Program, name:String, arr:js.lib.Float32Array):WebGLRenderer;
-	/**
-		Sets the value of a 2fv uniform variable in the given WebGLProgram.
-		
-		If the shader is not currently active, it is made active first.
-	**/
-	function setFloat2v(program:js.html.webgl.Program, name:String, arr:js.lib.Float32Array):WebGLRenderer;
-	/**
-		Sets the value of a 3fv uniform variable in the given WebGLProgram.
-		
-		If the shader is not currently active, it is made active first.
-	**/
-	function setFloat3v(program:js.html.webgl.Program, name:String, arr:js.lib.Float32Array):WebGLRenderer;
-	/**
-		Sets the value of a 4fv uniform variable in the given WebGLProgram.
-		
-		If the shader is not currently active, it is made active first.
-	**/
-	function setFloat4v(program:js.html.webgl.Program, name:String, arr:js.lib.Float32Array):WebGLRenderer;
-	/**
-		Sets a 1i uniform value on the given shader.
-		
-		If the shader is not currently active, it is made active first.
-	**/
-	function setInt1(program:js.html.webgl.Program, name:String, x:Float):WebGLRenderer;
-	/**
-		Sets the 2i uniform values on the given shader.
-		
-		If the shader is not currently active, it is made active first.
-	**/
-	function setInt2(program:js.html.webgl.Program, name:String, x:Float, y:Float):WebGLRenderer;
-	/**
-		Sets the 3i uniform values on the given shader.
-		
-		If the shader is not currently active, it is made active first.
-	**/
-	function setInt3(program:js.html.webgl.Program, name:String, x:Float, y:Float, z:Float):WebGLRenderer;
-	/**
-		Sets the 4i uniform values on the given shader.
-		
-		If the shader is not currently active, it is made active first.
-	**/
-	function setInt4(program:js.html.webgl.Program, name:String, x:Float, y:Float, z:Float, w:Float):WebGLRenderer;
-	/**
-		Sets the value of a matrix 2fv uniform variable in the given WebGLProgram.
-		
-		If the shader is not currently active, it is made active first.
-	**/
-	function setMatrix2(program:js.html.webgl.Program, name:String, transpose:Bool, matrix:js.lib.Float32Array):WebGLRenderer;
-	/**
-		Sets the value of a matrix 3fv uniform variable in the given WebGLProgram.
-		
-		If the shader is not currently active, it is made active first.
-	**/
-	function setMatrix3(program:js.html.webgl.Program, name:String, transpose:Bool, matrix:js.lib.Float32Array):WebGLRenderer;
-	/**
-		Sets the value of a matrix 4fv uniform variable in the given WebGLProgram.
-		
-		If the shader is not currently active, it is made active first.
-	**/
-	function setMatrix4(program:js.html.webgl.Program, name:String, transpose:Bool, matrix:js.lib.Float32Array):WebGLRenderer;
-	/**
-		Returns the maximum number of texture units that can be used in a fragment shader.
-	**/
-	function getMaxTextures():Float;
-	/**
 		Returns the largest texture size (either width or height) that can be created.
 		Note that VRAM may not allow a texture of any given size, it just expresses
 		hardware / driver support for a given size.
 	**/
 	function getMaxTextureSize():Float;
 	/**
-		Destroy this WebGLRenderer, cleaning up all related resources such as pipelines, native textures, etc.
+		Add a listener for a given event.
 	**/
-	function destroy():Void;
+	function on(event:ts.AnyOf2<String, js.lib.Symbol>, fn:haxe.Constraints.Function, ?context:Dynamic):WebGLRenderer;
+	/**
+		Add a listener for a given event.
+	**/
+	function addListener(event:ts.AnyOf2<String, js.lib.Symbol>, fn:haxe.Constraints.Function, ?context:Dynamic):WebGLRenderer;
+	/**
+		Add a one-time listener for a given event.
+	**/
+	function once(event:ts.AnyOf2<String, js.lib.Symbol>, fn:haxe.Constraints.Function, ?context:Dynamic):WebGLRenderer;
+	/**
+		Remove the listeners of a given event.
+	**/
+	function removeListener(event:ts.AnyOf2<String, js.lib.Symbol>, ?fn:haxe.Constraints.Function, ?context:Dynamic, ?once:Bool):WebGLRenderer;
+	/**
+		Remove the listeners of a given event.
+	**/
+	function off(event:ts.AnyOf2<String, js.lib.Symbol>, ?fn:haxe.Constraints.Function, ?context:Dynamic, ?once:Bool):WebGLRenderer;
+	/**
+		Remove all listeners, or those of the specified event.
+	**/
+	function removeAllListeners(?event:ts.AnyOf2<String, js.lib.Symbol>):WebGLRenderer;
 	static var prototype : WebGLRenderer;
 }

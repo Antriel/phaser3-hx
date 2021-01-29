@@ -2,6 +2,10 @@ package global.phaser.tilemaps;
 
 @:native("Phaser.Tilemaps.Parsers") @valueModuleOnly extern class Parsers {
 	/**
+		Get the Tilemap orientation from the given string.
+	**/
+	static function FromOrientationString(?orientation:String):Orientation;
+	/**
 		Parses raw data of a given Tilemap format into a new MapData object. If no recognized data format
 		is found, returns `null`. When loading from CSV or a 2D array, you should specify the tileWidth &
 		tileHeight. When parsing from a map from Tiled, the tileWidth & tileHeight will be pulled from

@@ -128,6 +128,16 @@ package global.phaser.display;
 	var v : Float;
 	static var prototype : Color;
 	/**
+		Return an array of Colors in a Color Spectrum.
+		
+		The spectrum colors flow in the order: red, yellow, green, blue.
+		
+		By default this function will return an array with 1024 elements in.
+		
+		However, you can reduce this to a smaller quantity if needed, by specitying the `limit` parameter.
+	**/
+	static function ColorSpectrum(?limit:Float):Array<global.phaser.types.display.ColorObject>;
+	/**
 		Converts the given color value into an Object containing r,g,b and a properties.
 	**/
 	static function ColorToRGBA(color:Float):global.phaser.types.display.ColorObject;
@@ -144,14 +154,6 @@ package global.phaser.display;
 	**/
 	static function GetColor32(red:Float, green:Float, blue:Float, alpha:Float):Float;
 	/**
-		Converts a hex string into a Phaser Color object.
-		
-		The hex string can supplied as `'#0033ff'` or the short-hand format of `'#03f'`; it can begin with an optional "#" or "0x", or be unprefixed.
-		
-		An alpha channel is _not_ supported.
-	**/
-	static function HexStringToColor(hex:String):Color;
-	/**
 		Converts HSL (hue, saturation and lightness) values to a Phaser Color object.
 	**/
 	static function HSLToColor(h:Float, s:Float, l:Float):Color;
@@ -160,12 +162,21 @@ package global.phaser.display;
 	**/
 	static function HSVColorWheel(?s:Float, ?v:Float):Array<global.phaser.types.display.ColorObject>;
 	/**
-		Converts an HSV (hue, saturation and value) color value to RGB.
-		Conversion formula from http://en.wikipedia.org/wiki/HSL_color_space.
+		Converts a HSV (hue, saturation and value) color set to RGB.
+		
+		Conversion formula from https://en.wikipedia.org/wiki/HSL_and_HSV
+		
 		Assumes HSV values are contained in the set [0, 1].
-		Based on code by Michael Jackson (https://github.com/mjijackson)
 	**/
 	static function HSVToRGB(h:Float, s:Float, v:Float, ?out:ts.AnyOf2<Color, global.phaser.types.display.ColorObject>):ts.AnyOf2<Color, global.phaser.types.display.ColorObject>;
+	/**
+		Converts a hex string into a Phaser Color object.
+		
+		The hex string can supplied as `'#0033ff'` or the short-hand format of `'#03f'`; it can begin with an optional "#" or "0x", or be unprefixed.
+		
+		An alpha channel is _not_ supported.
+	**/
+	static function HexStringToColor(hex:String):Color;
 	/**
 		Converts a hue to an RGB color.
 		Based on code by Michael Jackson (https://github.com/mjijackson)
@@ -186,11 +197,6 @@ package global.phaser.display;
 	**/
 	static function ObjectToColor(input:global.phaser.types.display.InputColorObject):Color;
 	/**
-		Creates a new Color object where the r, g, and b values have been set to random values
-		based on the given min max values.
-	**/
-	static function RandomRGB(?min:Float, ?max:Float):Color;
-	/**
 		Converts a CSS 'web' string into a Phaser Color object.
 		
 		The web string can be in the format `'rgb(r,g,b)'` or `'rgba(r,g,b,a)'` where r/g/b are in the range [0..255] and a is in the range [0..1].
@@ -207,6 +213,11 @@ package global.phaser.display;
 		Converts the color values into an HTML compatible color string, prefixed with either `#` or `0x`.
 	**/
 	static function RGBToString(r:Float, g:Float, b:Float, ?a:Float, ?prefix:String):String;
+	/**
+		Creates a new Color object where the r, g, and b values have been set to random values
+		based on the given min max values.
+	**/
+	static function RandomRGB(?min:Float, ?max:Float):Color;
 	/**
 		Converts the given source color value into an instance of a Color class.
 		The value can be either a string, prefixed with `rgb` or a hex string, a number or an Object.

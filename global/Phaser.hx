@@ -6,19 +6,25 @@ package global;
 	**/
 	static final VERSION : String;
 	/**
-		AUTO Detect Renderer.
+		This setting will auto-detect if the browser is capable of suppporting WebGL.
+		If it is, it will use the WebGL Renderer. If not, it will fall back to the Canvas Renderer.
 	**/
 	static final AUTO : Float;
 	/**
-		Canvas Renderer.
+		Forces Phaser to only use the Canvas Renderer, regardless if the browser supports
+		WebGL or not.
 	**/
 	static final CANVAS : Float;
 	/**
-		WebGL Renderer.
+		Forces Phaser to use the WebGL Renderer. If the browser does not support it, there is
+		no fallback to Canvas with this setting, so you should trap it and display a suitable
+		message to the user.
 	**/
 	static final WEBGL : Float;
 	/**
-		Headless Renderer.
+		A Headless Renderer doesn't create either a Canvas or WebGL Renderer. However, it still
+		absolutely relies on the DOM being present and available. This mode is meant for unit testing,
+		not for running Phaser on the server, which is something you really shouldn't do.
 	**/
 	static final HEADLESS : Float;
 	/**

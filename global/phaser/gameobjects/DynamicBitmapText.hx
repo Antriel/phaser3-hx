@@ -20,12 +20,12 @@ package global.phaser.gameobjects;
 	
 	To create a BitmapText data files you need a 3rd party app such as:
 	
-	BMFont (Windows, free): http://www.angelcode.com/products/bmfont/
-	Glyph Designer (OS X, commercial): http://www.71squared.com/en/glyphdesigner
-	Littera (Web-based, free): http://kvazars.com/littera/
+	BMFont (Windows, free): {@link http://www.angelcode.com/products/bmfont/|http://www.angelcode.com/products/bmfont/}
+	Glyph Designer (OS X, commercial): {@link http://www.71squared.com/en/glyphdesigner|http://www.71squared.com/en/glyphdesigner}
+	Littera (Web-based, free): {@link http://kvazars.com/littera/|http://kvazars.com/littera/}
 	
 	For most use cases it is recommended to use XML. If you wish to use JSON, the formatting should be equal to the result of
-	converting a valid XML file through the popular X2JS library. An online tool for conversion can be found here: http://codebeautify.org/xmltojson
+	converting a valid XML file through the popular X2JS library. An online tool for conversion can be found here: {@link http://codebeautify.org/xmltojson|http://codebeautify.org/xmltojson}
 **/
 @:native("Phaser.GameObjects.DynamicBitmapText") extern class DynamicBitmapText extends BitmapText {
 	function new(scene:global.phaser.Scene, x:Float, y:Float, font:String, ?text:ts.AnyOf2<String, Array<String>>, ?size:Float, ?align:Float);
@@ -163,9 +163,48 @@ package global.phaser.gameobjects;
 	**/
 	function setDisplayOrigin(?x:Float, ?y:Float):DynamicBitmapText;
 	/**
-		Sets the active WebGL Pipeline of this Game Object.
+		Sets the main WebGL Pipeline of this Game Object.
+		
+		Also sets the `pipelineData` property, if the parameter is given.
+		
+		Both the pipeline and post pipelines share the same pipeline data object.
 	**/
-	function setPipeline(pipelineName:String):DynamicBitmapText;
+	function setPipeline(pipeline:ts.AnyOf2<String, global.phaser.renderer.webgl.WebGLPipeline>, ?pipelineData:Dynamic, ?copyData:Bool):DynamicBitmapText;
+	/**
+		Sets one, or more, Post Pipelines on this Game Object.
+		
+		Post Pipelines are invoked after this Game Object has rendered to its target and
+		are commonly used for post-fx.
+		
+		The post pipelines are appended to the `postPipelines` array belonging to this
+		Game Object. When the renderer processes this Game Object, it iterates through the post
+		pipelines in the order in which they appear in the array. If you are stacking together
+		multiple effects, be aware that the order is important.
+		
+		If you call this method multiple times, the new pipelines will be appended to any existing
+		post pipelines already set. Use the `resetPostPipeline` method to clear them first, if required.
+		
+		You can optionally also sets the `pipelineData` property, if the parameter is given.
+		
+		Both the pipeline and post pipelines share the pipeline data object together.
+	**/
+	function setPostPipeline(pipelines:ts.AnyOf6<String, haxe.Constraints.Function, Array<haxe.Constraints.Function>, Array<String>, global.phaser.renderer.webgl.pipelines.PostFXPipeline, Array<global.phaser.renderer.webgl.pipelines.PostFXPipeline>>, ?pipelineData:Dynamic, ?copyData:Bool):DynamicBitmapText;
+	/**
+		Adds an entry to the `pipelineData` object belonging to this Game Object.
+		
+		If the 'key' already exists, its value is updated. If it doesn't exist, it is created.
+		
+		If `value` is undefined, and `key` exists, `key` is removed from the data object.
+		
+		Both the pipeline and post pipelines share the pipeline data object together.
+	**/
+	function setPipelineData(key:String, ?value:Dynamic):DynamicBitmapText;
+	/**
+		Removes a type of Post Pipeline instances from this Game Object, based on the given name, and destroys them.
+		
+		If you wish to remove all Post Pipelines use the `resetPostPipeline` method instead.
+	**/
+	function removePostPipeline(pipeline:ts.AnyOf2<String, global.phaser.renderer.webgl.pipelines.PostFXPipeline>):DynamicBitmapText;
 	/**
 		Sets the scroll factor of this Game Object.
 		
@@ -248,6 +287,10 @@ package global.phaser.gameobjects;
 	**/
 	function setPosition(?x:Float, ?y:Float, ?z:Float, ?w:Float):DynamicBitmapText;
 	/**
+		Copies an object's coordinates to this Game Object's position.
+	**/
+	function copyPosition(source:ts.AnyOf3<global.phaser.types.math.Vector2Like, global.phaser.types.math.Vector3Like, global.phaser.types.math.Vector4Like>):DynamicBitmapText;
+	/**
 		Sets the position of this Game Object to be a random position within the confines of
 		the given area.
 		
@@ -325,6 +368,74 @@ package global.phaser.gameobjects;
 		An array of strings will be converted into multi-line text. Use the align methods to change multi-line alignment.
 	**/
 	function setText(value:ts.AnyOf2<String, Array<String>>):DynamicBitmapText;
+	/**
+		Sets a drop shadow effect on this Bitmap Text.
+		
+		This is a WebGL only feature and only works with Static Bitmap Text, not Dynamic.
+		
+		You can set the vertical and horizontal offset of the shadow, as well as the color and alpha.
+		
+		Once a shadow has been enabled you can modify the `dropShadowX` and `dropShadowY` properties of this
+		Bitmap Text directly to adjust the position of the shadow in real-time.
+		
+		If you wish to clear the shadow, call this method with no parameters specified.
+	**/
+	function setDropShadow(?x:Float, ?y:Float, ?color:Float, ?alpha:Float):DynamicBitmapText;
+	/**
+		Sets a tint on a range of characters in this Bitmap Text, starting from the `start` parameter index
+		and running for `length` quantity of characters.
+		
+		The `start` parameter can be negative. In this case, it starts at the end of the text and counts
+		backwards `start` places.
+		
+		You can also pass in -1 as the `length` and it will tint all characters from `start`
+		up until the end of the string.
+		Remember that spaces and punctuation count as characters.
+		
+		This is a WebGL only feature and only works with Static Bitmap Text, not Dynamic.
+		
+		The tint works by taking the pixel color values from the Bitmap Text texture, and then
+		multiplying it by the color value of the tint. You can provide either one color value,
+		in which case the whole character will be tinted in that color. Or you can provide a color
+		per corner. The colors are blended together across the extent of the character range.
+		
+		To swap this from being an additive tint to a fill based tint, set the `tintFill` parameter to `true`.
+		
+		To modify the tint color once set, call this method again with new color values.
+		
+		Using `setWordTint` can override tints set by this function, and vice versa.
+		
+		To remove a tint call this method with just the `start`, and optionally, the `length` parameters defined.
+	**/
+	function setCharacterTint(?start:Float, ?length:Float, ?tintFill:Bool, ?topLeft:Float, ?topRight:Float, ?bottomLeft:Float, ?bottomRight:Float):DynamicBitmapText;
+	/**
+		Sets a tint on a matching word within this Bitmap Text.
+		
+		The `word` parameter can be either a string or a number.
+		
+		If a string, it will run a string comparison against the text contents, and if matching,
+		it will tint the whole word.
+		
+		If a number, if till that word, based on its offset within the text contents.
+		
+		The `count` parameter controls how many words are replaced. Pass in -1 to replace them all.
+		
+		This parameter is ignored if you pass a number as the `word` to be searched for.
+		
+		This is a WebGL only feature and only works with Static Bitmap Text, not Dynamic.
+		
+		The tint works by taking the pixel color values from the Bitmap Text texture, and then
+		multiplying it by the color value of the tint. You can provide either one color value,
+		in which case the whole character will be tinted in that color. Or you can provide a color
+		per corner. The colors are blended together across the extent of the character range.
+		
+		To swap this from being an additive tint to a fill based tint, set the `tintFill` parameter to `true`.
+		
+		To modify the tint color once set, call this method again with new color values.
+		
+		Using `setCharacterTint` can override tints set by this function, and vice versa.
+	**/
+	function setWordTint(word:ts.AnyOf2<String, Float>, ?count:Float, ?tintFill:Bool, ?topLeft:Float, ?topRight:Float, ?bottomLeft:Float, ?bottomRight:Float):DynamicBitmapText;
 	/**
 		Updates the Display Origin cached values internally stored on this Game Object.
 		You don't usually call this directly, but it is exposed for edge-cases where you may.
@@ -450,7 +561,7 @@ package global.phaser.gameobjects;
 		
 		You can also provide an Input Configuration Object as the only argument to this method.
 	**/
-	function setInteractive(?shape:Dynamic, ?callback:global.phaser.types.input.HitAreaCallback, ?dropZone:Bool):DynamicBitmapText;
+	function setInteractive(?hitArea:Dynamic, ?callback:global.phaser.types.input.HitAreaCallback, ?dropZone:Bool):DynamicBitmapText;
 	/**
 		If this Game Object has previously been enabled for input, this will disable it.
 		

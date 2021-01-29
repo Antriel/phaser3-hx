@@ -17,11 +17,6 @@ typedef ScaleConfig = {
 	@:optional
 	var zoom : ts.AnyOf2<Float, global.phaser.scale.Zoom>;
 	/**
-		The rendering resolution of the canvas. This is reserved for future use and is currently ignored.
-	**/
-	@:optional
-	var resolution : Float;
-	/**
 		The DOM element that will contain the game canvas, or its `id`. If undefined, or if the named element doesn't exist, the game canvas is inserted directly into the document body. If `null` no parent will be used and you are responsible for adding the canvas to your environment.
 	**/
 	@:optional

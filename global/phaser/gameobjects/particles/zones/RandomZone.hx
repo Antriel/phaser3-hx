@@ -1,7 +1,7 @@
 package global.phaser.gameobjects.particles.zones;
 
 /**
-	A zone that places particles randomly within a shape's area.
+	A zone that places particles randomly within a shapes area.
 **/
 @:native("Phaser.GameObjects.Particles.Zones.RandomZone") extern class RandomZone {
 	function new(source:global.phaser.types.gameobjects.particles.RandomZoneSource);

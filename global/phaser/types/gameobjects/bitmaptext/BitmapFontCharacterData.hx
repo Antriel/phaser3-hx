@@ -4,6 +4,8 @@ package global.phaser.types.gameobjects.bitmaptext;
 	The font data for an individual character of a Bitmap Font.
 	
 	Describes the character's position, size, offset and kerning.
+	
+	As of version 3.50 it also includes the WebGL texture uv data.
 **/
 typedef BitmapFontCharacterData = {
 	/**
@@ -38,6 +40,22 @@ typedef BitmapFontCharacterData = {
 		The y offset of the character.
 	**/
 	var yOffset : Float;
+	/**
+		WebGL texture u0.
+	**/
+	var u0 : Float;
+	/**
+		WebGL texture v0.
+	**/
+	var v0 : Float;
+	/**
+		WebGL texture u1.
+	**/
+	var u1 : Float;
+	/**
+		WebGL texture v1.
+	**/
+	var v1 : Float;
 	/**
 		Extra data for the character.
 	**/

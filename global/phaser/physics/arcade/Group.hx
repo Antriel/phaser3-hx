@@ -3,9 +3,19 @@ package global.phaser.physics.arcade;
 /**
 	An Arcade Physics Group object.
 	
-	All Game Objects created by or added to this Group will automatically be given dynamic Arcade Physics bodies, if they have no body.
+	The primary use of a Physics Group is a way to collect together physics enable objects
+	that share the same intrinsic structure into a single pool. They can they be easily
+	compared against other Groups, or Game Objects.
 	
-	Its static counterpart is {@link Phaser.Physics.Arcade.StaticGroup}.
+	All Game Objects created by, or added to this Group will automatically be given **dynamic**
+	Arcade Physics bodies (if they have no body already) and the bodies will receive the
+	Groups {@link Phaser.Physics.Arcade.Group#defaults default values}.
+	
+	You should not pass objects into this Group that should not receive a body. For example,
+	do not add basic Geometry or Tilemap Layers into a Group, as they will not behave in the
+	way you may expect. Groups should all ideally have objects of the same type in them.
+	
+	If you wish to create a Group filled with Static Bodies, please see {@link Phaser.Physics.Arcade.StaticGroup}.
 **/
 @:native("Phaser.Physics.Arcade.Group") extern class Group extends global.phaser.gameobjects.Group {
 	function new(world:World, scene:global.phaser.Scene, ?children:ts.AnyOf3<Array<global.phaser.gameobjects.GameObject>, global.phaser.types.gameobjects.group.GroupCreateConfig, global.phaser.types.physics.arcade.PhysicsGroupConfig>, ?config:ts.AnyOf2<global.phaser.types.gameobjects.group.GroupCreateConfig, global.phaser.types.physics.arcade.PhysicsGroupConfig>);
@@ -19,6 +29,8 @@ package global.phaser.physics.arcade;
 	var physicsType : Float;
 	/**
 		Default physics properties applied to Game Objects added to the Group or created by the Group. Derived from the `config` argument.
+		
+		You can remove the default values by setting this property to `{}`.
 	**/
 	var defaults : global.phaser.types.physics.arcade.PhysicsGroupDefaults;
 	/**
@@ -182,5 +194,29 @@ package global.phaser.physics.arcade;
 		Toggles (flips) the visible state of each member of this group.
 	**/
 	function toggleVisible():Group;
+	/**
+		Add a listener for a given event.
+	**/
+	function on(event:ts.AnyOf2<String, js.lib.Symbol>, fn:haxe.Constraints.Function, ?context:Dynamic):Group;
+	/**
+		Add a listener for a given event.
+	**/
+	function addListener(event:ts.AnyOf2<String, js.lib.Symbol>, fn:haxe.Constraints.Function, ?context:Dynamic):Group;
+	/**
+		Add a one-time listener for a given event.
+	**/
+	function once(event:ts.AnyOf2<String, js.lib.Symbol>, fn:haxe.Constraints.Function, ?context:Dynamic):Group;
+	/**
+		Remove the listeners of a given event.
+	**/
+	function removeListener(event:ts.AnyOf2<String, js.lib.Symbol>, ?fn:haxe.Constraints.Function, ?context:Dynamic, ?once:Bool):Group;
+	/**
+		Remove the listeners of a given event.
+	**/
+	function off(event:ts.AnyOf2<String, js.lib.Symbol>, ?fn:haxe.Constraints.Function, ?context:Dynamic, ?once:Bool):Group;
+	/**
+		Remove all listeners, or those of the specified event.
+	**/
+	function removeAllListeners(?event:ts.AnyOf2<String, js.lib.Symbol>):Group;
 	static var prototype : Group;
 }

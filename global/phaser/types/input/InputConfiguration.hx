@@ -10,7 +10,7 @@ typedef InputConfiguration = {
 		The callback that determines if the pointer is within the Hit Area shape or not.
 	**/
 	@:optional
-	var hitAreaCallback : haxe.Constraints.Function;
+	dynamic function hitAreaCallback(hitArea:Dynamic, x:Float, y:Float, gameObject:global.phaser.gameobjects.GameObject):Void;
 	/**
 		If `true` the Interactive Object will be set to be draggable and emit drag events.
 	**/

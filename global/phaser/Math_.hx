@@ -161,6 +161,14 @@ package global.phaser;
 	**/
 	static function SinCosTableGenerator(length:Float, ?sinAmp:Float, ?cosAmp:Float, ?frequency:Float):global.phaser.types.math.SinCosTable;
 	/**
+		Calculate a smooth interpolation percentage of `x` between `min` and `max`.
+		
+		The function receives the number `x` as an argument and returns 0 if `x` is less than or equal to the left edge,
+		1 if `x` is greater than or equal to the right edge, and smoothly interpolates, using a Hermite polynomial,
+		between 0 and 1 otherwise.
+	**/
+	static function SmoothStep(x:Float, min:Float, max:Float):Float;
+	/**
 		Calculate a smoother interpolation percentage of `x` between `min` and `max`.
 		
 		The function receives the number `x` as an argument and returns 0 if `x` is less than or equal to the left edge,
@@ -170,14 +178,6 @@ package global.phaser;
 		Produces an even smoother interpolation than {@link Phaser.Math.SmoothStep}.
 	**/
 	static function SmootherStep(x:Float, min:Float, max:Float):Float;
-	/**
-		Calculate a smooth interpolation percentage of `x` between `min` and `max`.
-		
-		The function receives the number `x` as an argument and returns 0 if `x` is less than or equal to the left edge,
-		1 if `x` is greater than or equal to the right edge, and smoothly interpolates, using a Hermite polynomial,
-		between 0 and 1 otherwise.
-	**/
-	static function SmoothStep(x:Float, min:Float, max:Float):Float;
 	/**
 		Returns a Vector2 containing the x and y position of the given index in a `width` x `height` sized grid.
 		

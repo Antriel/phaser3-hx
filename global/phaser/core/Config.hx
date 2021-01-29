@@ -18,10 +18,6 @@ package global.phaser.core;
 	**/
 	final zoom : ts.AnyOf2<Float, global.phaser.scale.Zoom>;
 	/**
-		The canvas device pixel resolution. Currently un-used.
-	**/
-	final resolution : Float;
-	/**
 		A parent DOM element into which the canvas created by the renderer will be injected.
 	**/
 	final parent : Dynamic;
@@ -138,9 +134,21 @@ package global.phaser.core;
 	**/
 	final inputMouseEventTarget : Dynamic;
 	/**
-		Should mouse events be captured? I.e. have prevent default called on them.
+		Should `mousedown` DOM events have `preventDefault` called on them?
 	**/
-	final inputMouseCapture : Bool;
+	final inputMousePreventDefaultDown : Bool;
+	/**
+		Should `mouseup` DOM events have `preventDefault` called on them?
+	**/
+	final inputMousePreventDefaultUp : Bool;
+	/**
+		Should `mousemove` DOM events have `preventDefault` called on them?
+	**/
+	final inputMousePreventDefaultMove : Bool;
+	/**
+		Should `wheel` DOM events have `preventDefault` called on them?
+	**/
+	final inputMousePreventDefaultWheel : Bool;
 	/**
 		Enable the Touch Plugin. This can be disabled in games that don't need touch input.
 	**/
@@ -202,6 +210,10 @@ package global.phaser.core;
 	**/
 	final fps : global.phaser.types.core.FPSConfig;
 	/**
+		An object mapping WebGL names to WebGLPipeline classes. These should be class constructors, not instances.
+	**/
+	final pipeline : global.phaser.types.core.PipelineConfig;
+	/**
 		When set to `true`, WebGL uses linear interpolation to draw scaled or rotated textures, giving a smooth appearance. When set to `false`, WebGL uses nearest-neighbor interpolation, giving a crisper appearance. `false` also disables antialiasing of the game canvas itself, if the browser supports it, when the game canvas is scaled.
 	**/
 	final antialias : Bool;
@@ -246,9 +258,13 @@ package global.phaser.core;
 	**/
 	final powerPreference : String;
 	/**
-		The default WebGL Batch size.
+		The default WebGL Batch size. Represents the number of _quads_ that can be added to a single batch.
 	**/
 	final batchSize : Float;
+	/**
+		When in WebGL mode, this sets the maximum number of GPU Textures to use. The default, -1, will use all available units. The WebGL1 spec says all browsers should provide a minimum of 8.
+	**/
+	final maxTextures : Float;
 	/**
 		The maximum number of lights allowed to be visible within range of a single Camera in the LightManager.
 	**/
@@ -333,5 +349,9 @@ package global.phaser.core;
 		A base64 encoded PNG that will be used as the default texture when a texture is assigned that is missing or not loaded.
 	**/
 	final missingImage : String;
+	/**
+		A base64 encoded PNG that will be used as the default texture when a texture is assigned that is white or not loaded.
+	**/
+	final whiteImage : String;
 	static var prototype : Config;
 }

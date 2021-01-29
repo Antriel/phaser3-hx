@@ -6,7 +6,34 @@ package global.phaser.gameobjects.components;
 **/
 typedef Tint = {
 	/**
-		Fill or additive?
+		The tint value being applied to the top-left vertice of the Game Object.
+		This value is interpolated from the corner to the center of the Game Object.
+		The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+	**/
+	var tintTopLeft : Float;
+	/**
+		The tint value being applied to the top-right vertice of the Game Object.
+		This value is interpolated from the corner to the center of the Game Object.
+		The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+	**/
+	var tintTopRight : Float;
+	/**
+		The tint value being applied to the bottom-left vertice of the Game Object.
+		This value is interpolated from the corner to the center of the Game Object.
+		The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+	**/
+	var tintBottomLeft : Float;
+	/**
+		The tint value being applied to the bottom-right vertice of the Game Object.
+		This value is interpolated from the corner to the center of the Game Object.
+		The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+	**/
+	var tintBottomRight : Float;
+	/**
+		The tint fill mode.
+		
+		`false` = An additive tint (the default), where vertices colors are blended with the texture.
+		`true` = A fill tint, where the vertices colors replace the texture, but respects texture alpha.
 	**/
 	var tintFill : Bool;
 	/**
@@ -52,32 +79,15 @@ typedef Tint = {
 	**/
 	function setTintFill(?topLeft:Float, ?topRight:Float, ?bottomLeft:Float, ?bottomRight:Float):Tint;
 	/**
-		The tint value being applied to the top-left of the Game Object.
-		This value is interpolated from the corner to the center of the Game Object.
-	**/
-	var tintTopLeft : Float;
-	/**
-		The tint value being applied to the top-right of the Game Object.
-		This value is interpolated from the corner to the center of the Game Object.
-	**/
-	var tintTopRight : Float;
-	/**
-		The tint value being applied to the bottom-left of the Game Object.
-		This value is interpolated from the corner to the center of the Game Object.
-	**/
-	var tintBottomLeft : Float;
-	/**
-		The tint value being applied to the bottom-right of the Game Object.
-		This value is interpolated from the corner to the center of the Game Object.
-	**/
-	var tintBottomRight : Float;
-	/**
 		The tint value being applied to the whole of the Game Object.
 		This property is a setter-only. Use the properties `tintTopLeft` etc to read the current tint value.
 	**/
 	var tint : Float;
 	/**
-		Does this Game Object have a tint applied to it or not?
+		Does this Game Object have a tint applied?
+		
+		It checks to see if the 4 tint properties are set to the value 0xffffff
+		and that the `tintFill` property is `false`. This indicates that a Game Object isn't tinted.
 	**/
 	final isTinted : Bool;
 };

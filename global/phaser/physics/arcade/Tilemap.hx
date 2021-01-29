@@ -16,7 +16,7 @@ package global.phaser.physics.arcade;
 	/**
 		The core separation function to separate a physics body and a tile.
 	**/
-	static function SeparateTile(i:Float, body:Body, tile:global.phaser.tilemaps.Tile, tileWorldRect:global.phaser.geom.Rectangle, tilemapLayer:ts.AnyOf2<global.phaser.tilemaps.DynamicTilemapLayer, global.phaser.tilemaps.StaticTilemapLayer>, tileBias:Float, isLayer:Bool):Bool;
+	static function SeparateTile(i:Float, body:Body, tile:global.phaser.tilemaps.Tile, tileWorldRect:global.phaser.geom.Rectangle, tilemapLayer:global.phaser.tilemaps.TilemapLayer, tileBias:Float, isLayer:Bool):Bool;
 	/**
 		Check the body against the given tile on the X axis.
 		Used internally by the SeparateTile function.

@@ -29,23 +29,23 @@ package global.phaser.physics.arcade;
 	/**
 		Adds an Arcade Physics Body to the given Game Object.
 	**/
-	function existing(gameObject:global.phaser.gameobjects.GameObject, ?isStatic:Bool):global.phaser.gameobjects.GameObject;
+	function existing<G>(gameObject:G, ?isStatic:Bool):G;
 	/**
 		Creates a new Arcade Image object with a Static body.
 	**/
-	function staticImage(x:Float, y:Float, texture:ts.AnyOf2<String, global.phaser.textures.Texture>, ?frame:ts.AnyOf2<String, Float>):Image;
+	function staticImage(x:Float, y:Float, texture:ts.AnyOf2<String, global.phaser.textures.Texture>, ?frame:ts.AnyOf2<String, Float>):global.phaser.types.physics.arcade.ImageWithStaticBody;
 	/**
 		Creates a new Arcade Image object with a Dynamic body.
 	**/
-	function image(x:Float, y:Float, texture:ts.AnyOf2<String, global.phaser.textures.Texture>, ?frame:ts.AnyOf2<String, Float>):Image;
+	function image(x:Float, y:Float, texture:ts.AnyOf2<String, global.phaser.textures.Texture>, ?frame:ts.AnyOf2<String, Float>):global.phaser.types.physics.arcade.ImageWithDynamicBody;
 	/**
 		Creates a new Arcade Sprite object with a Static body.
 	**/
-	function staticSprite(x:Float, y:Float, texture:ts.AnyOf2<String, global.phaser.textures.Texture>, ?frame:ts.AnyOf2<String, Float>):Sprite;
+	function staticSprite(x:Float, y:Float, texture:ts.AnyOf2<String, global.phaser.textures.Texture>, ?frame:ts.AnyOf2<String, Float>):global.phaser.types.physics.arcade.SpriteWithStaticBody;
 	/**
 		Creates a new Arcade Sprite object with a Dynamic body.
 	**/
-	function sprite(x:Float, y:Float, key:String, ?frame:ts.AnyOf2<String, Float>):Sprite;
+	function sprite(x:Float, y:Float, key:String, ?frame:ts.AnyOf2<String, Float>):global.phaser.types.physics.arcade.SpriteWithDynamicBody;
 	/**
 		Creates a Static Physics Group object.
 		All Game Objects created by this Group will automatically be static Arcade Physics objects.

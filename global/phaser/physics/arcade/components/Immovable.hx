@@ -5,7 +5,11 @@ package global.phaser.physics.arcade.components;
 **/
 typedef Immovable = {
 	/**
-		Sets Whether this Body can be moved by collisions with another Body.
+		Sets if this Body can be separated during collisions with other bodies.
+		
+		When a body is immovable it means it won't move at all, not even to separate it from collision
+		overlap. If you just wish to prevent a body from being knocked around by other bodies, see
+		the `setPushable` method instead.
 	**/
 	function setImmovable(?value:Bool):Immovable;
 };

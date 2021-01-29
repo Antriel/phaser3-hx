@@ -52,7 +52,7 @@ typedef RenderConfig = {
 	@:optional
 	var powerPreference : String;
 	/**
-		The default WebGL batch size.
+		The default WebGL batch size. Represents the number of _quads_ that can be added to a single batch.
 	**/
 	@:optional
 	var batchSize : Float;
@@ -62,8 +62,18 @@ typedef RenderConfig = {
 	@:optional
 	var maxLights : Float;
 	/**
+		When in WebGL mode, this sets the maximum number of GPU Textures to use. The default, -1, will use all available units. The WebGL1 spec says all browsers should provide a minimum of 8.
+	**/
+	@:optional
+	var maxTextures : Float;
+	/**
 		The mipmap magFilter to be used when creating WebGL textures.
 	**/
 	@:optional
 	var mipmapFilter : String;
+	/**
+		The WebGL Pipeline configuration object.
+	**/
+	@:optional
+	var pipline : PipelineConfig;
 };

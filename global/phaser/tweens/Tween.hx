@@ -217,7 +217,8 @@ package global.phaser.tweens;
 	/**
 		Seeks to a specific point in the Tween.
 		
-		**Note:** You cannot seek a Tween that repeats or loops forever, or that has an unusually long total duration.
+		**Note:** Be careful when seeking a Tween that repeats or loops forever,
+		or that has an unusually long total duration, as it's possible to hang the browser.
 		
 		The given position is a value between 0 and 1 which represents how far through the Tween to seek to.
 		A value of 0.5 would seek to half-way through the Tween, where-as a value of zero would seek to the start.

@@ -25,6 +25,12 @@ package global.phaser.data;
 	**/
 	static final CHANGE_DATA_KEY : Dynamic;
 	/**
+		The Data Manager Destroy Event.
+		
+		The Data Manager will listen for the destroy event from its parent, and then close itself down.
+	**/
+	static final DESTROY : Dynamic;
+	/**
 		The Remove Data Event.
 		
 		This event is dispatched by a Data Manager when an item is removed from it.

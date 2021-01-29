@@ -15,9 +15,9 @@ package global.phaser.gameobjects;
 @:native("Phaser.GameObjects.Rope") extern class Rope extends GameObject {
 	function new(scene:global.phaser.Scene, ?x:Float, ?y:Float, ?texture:String, ?frame:ts.AnyOf2<String, Float>, ?points:ts.AnyOf2<Float, Array<global.phaser.types.math.Vector2Like>>, ?horizontal:Bool, ?colors:Array<Float>, ?alphas:Array<Float>);
 	/**
-		The Animation Controller of this Rope.
+		The Animation State of this Rope.
 	**/
-	var anims : global.phaser.gameobjects.components.Animation;
+	var anims : global.phaser.animations.AnimationState;
 	/**
 		An array containing the points data for this Rope.
 		
@@ -67,11 +67,10 @@ package global.phaser.gameobjects;
 	/**
 		The tint fill mode.
 		
-		0 = An additive tint (the default), where vertices colors are blended with the texture.
-		1 = A fill tint, where the vertices colors replace the texture, but respects texture alpha.
-		2 = A complete tint, where the vertices colors replace the texture, including alpha, entirely.
+		`false` = An additive tint (the default), where vertices colors are blended with the texture.
+		`true` = A fill tint, where the vertices colors replace the texture, but respects texture alpha.
 	**/
-	var tintFill : Float;
+	var tintFill : Bool;
 	/**
 		If the Rope is marked as `dirty` it will automatically recalculate its vertices
 		the next time it renders. You can also force this by calling `updateVertices`.
@@ -138,18 +137,16 @@ package global.phaser.gameobjects;
 	/**
 		Sets the tint fill mode.
 		
-		Mode 0 is an additive tint, the default, which blends the vertices colors with the texture.
+		Mode 0 (`false`) is an additive tint, the default, which blends the vertices colors with the texture.
 		This mode respects the texture alpha.
 		
-		Mode 1 is a fill tint. Unlike an additive tint, a fill-tint literally replaces the pixel colors
+		Mode 1 (`true`) is a fill tint. Unlike an additive tint, a fill-tint literally replaces the pixel colors
 		from the texture with those in the tint. You can use this for effects such as making a player flash 'white'
 		if hit by something. This mode respects the texture alpha.
 		
-		Mode 2 is a complete tint. The texture colors and alpha are replaced entirely by the vertices colors.
-		
 		See the `setColors` method for details of how to color each of the vertices.
 	**/
-	function setTintFill(?value:Float):Rope;
+	function setTintFill(?value:Bool):Rope;
 	/**
 		Set the alpha values used by the Rope during rendering.
 		
@@ -240,9 +237,10 @@ package global.phaser.gameobjects;
 	/**
 		This method enables rendering of the Rope vertices to the given Graphics instance.
 		
-		If you enable this feature, you must call `Graphics.clear()` in your Scene `update`,
-		otherwise the Graphics instance will fill-in with draw calls. This is not done automatically
-		to allow for you to debug render multiple Rope objects to a single Graphics instance.
+		If you enable this feature, you **must** call `Graphics.clear()` in your Scene `update`,
+		otherwise the Graphics instance you provide to debug will fill-up with draw calls,
+		eventually crashing the browser. This is not done automatically to allow you to debug
+		draw multiple Rope objects to a single Graphics instance.
 		
 		The Rope class has a built-in debug rendering callback `Rope.renderDebugVerts`, however
 		you can also provide your own callback to be used instead. Do this by setting the `callback` parameter.
@@ -431,6 +429,8 @@ package global.phaser.gameobjects;
 		Creates and returns a Bitmap Mask. This mask can be used by any Game Object,
 		including this one.
 		
+		Note: Bitmap Masks only work on WebGL. Geometry Masks work on both WebGL and Canvas.
+		
 		To create the mask you need to pass in a reference to a renderable Game Object.
 		A renderable Game Object is one that uses a texture to render with, such as an
 		Image, Sprite, Render Texture or BitmapText.
@@ -454,6 +454,8 @@ package global.phaser.gameobjects;
 	function createGeometryMask(?graphics:Graphics):global.phaser.display.masks.GeometryMask;
 	/**
 		The initial WebGL pipeline of this Game Object.
+		
+		If you call `resetPipeline` on this Game Object, the pipeline is reset to this default.
 	**/
 	var defaultPipeline : global.phaser.renderer.webgl.WebGLPipeline;
 	/**
@@ -461,18 +463,84 @@ package global.phaser.gameobjects;
 	**/
 	var pipeline : global.phaser.renderer.webgl.WebGLPipeline;
 	/**
-		Sets the initial WebGL Pipeline of this Game Object.
-		This should only be called during the instantiation of the Game Object.
+		Does this Game Object have any Post Pipelines set?
 	**/
-	function initPipeline(?pipelineName:String):Bool;
+	var hasPostPipeline : Bool;
 	/**
-		Sets the active WebGL Pipeline of this Game Object.
+		The WebGL Post FX Pipelines this Game Object uses for post-render effects.
+		
+		The pipelines are processed in the order in which they appear in this array.
+		
+		If you modify this array directly, be sure to set the
+		`hasPostPipeline` property accordingly.
 	**/
-	function setPipeline(pipelineName:String):Rope;
+	var postPipeline : Array<global.phaser.renderer.webgl.pipelines.PostFXPipeline>;
+	/**
+		An object to store pipeline specific data in, to be read by the pipelines this Game Object uses.
+	**/
+	var pipelineData : Dynamic;
+	/**
+		Sets the initial WebGL Pipeline of this Game Object.
+		
+		This should only be called during the instantiation of the Game Object. After that, use `setPipeline`.
+	**/
+	function initPipeline(pipeline:ts.AnyOf2<String, global.phaser.renderer.webgl.WebGLPipeline>):Bool;
+	/**
+		Sets the main WebGL Pipeline of this Game Object.
+		
+		Also sets the `pipelineData` property, if the parameter is given.
+		
+		Both the pipeline and post pipelines share the same pipeline data object.
+	**/
+	function setPipeline(pipeline:ts.AnyOf2<String, global.phaser.renderer.webgl.WebGLPipeline>, ?pipelineData:Dynamic, ?copyData:Bool):Rope;
+	/**
+		Sets one, or more, Post Pipelines on this Game Object.
+		
+		Post Pipelines are invoked after this Game Object has rendered to its target and
+		are commonly used for post-fx.
+		
+		The post pipelines are appended to the `postPipelines` array belonging to this
+		Game Object. When the renderer processes this Game Object, it iterates through the post
+		pipelines in the order in which they appear in the array. If you are stacking together
+		multiple effects, be aware that the order is important.
+		
+		If you call this method multiple times, the new pipelines will be appended to any existing
+		post pipelines already set. Use the `resetPostPipeline` method to clear them first, if required.
+		
+		You can optionally also sets the `pipelineData` property, if the parameter is given.
+		
+		Both the pipeline and post pipelines share the pipeline data object together.
+	**/
+	function setPostPipeline(pipelines:ts.AnyOf6<String, haxe.Constraints.Function, Array<haxe.Constraints.Function>, Array<String>, global.phaser.renderer.webgl.pipelines.PostFXPipeline, Array<global.phaser.renderer.webgl.pipelines.PostFXPipeline>>, ?pipelineData:Dynamic, ?copyData:Bool):Rope;
+	/**
+		Adds an entry to the `pipelineData` object belonging to this Game Object.
+		
+		If the 'key' already exists, its value is updated. If it doesn't exist, it is created.
+		
+		If `value` is undefined, and `key` exists, `key` is removed from the data object.
+		
+		Both the pipeline and post pipelines share the pipeline data object together.
+	**/
+	function setPipelineData(key:String, ?value:Dynamic):Rope;
+	/**
+		Gets a Post Pipeline instance from this Game Object, based on the given name, and returns it.
+	**/
+	function getPostPipeline(pipeline:ts.AnyOf3<String, haxe.Constraints.Function, global.phaser.renderer.webgl.pipelines.PostFXPipeline>):ts.AnyOf2<global.phaser.renderer.webgl.pipelines.PostFXPipeline, Array<global.phaser.renderer.webgl.pipelines.PostFXPipeline>>;
 	/**
 		Resets the WebGL Pipeline of this Game Object back to the default it was created with.
 	**/
-	function resetPipeline():Bool;
+	function resetPipeline(?resetPostPipelines:Bool, ?resetData:Bool):Bool;
+	/**
+		Resets the WebGL Post Pipelines of this Game Object. It does this by calling
+		the `destroy` method on each post pipeline and then clearing the local array.
+	**/
+	function resetPostPipeline(?resetData:Bool):Void;
+	/**
+		Removes a type of Post Pipeline instances from this Game Object, based on the given name, and destroys them.
+		
+		If you wish to remove all Post Pipelines use the `resetPostPipeline` method instead.
+	**/
+	function removePostPipeline(pipeline:ts.AnyOf2<String, global.phaser.renderer.webgl.pipelines.PostFXPipeline>):Rope;
 	/**
 		Gets the name of the WebGL Pipeline this Game Object is currently using.
 	**/
@@ -622,6 +690,10 @@ package global.phaser.gameobjects;
 	**/
 	function setPosition(?x:Float, ?y:Float, ?z:Float, ?w:Float):Rope;
 	/**
+		Copies an object's coordinates to this Game Object's position.
+	**/
+	function copyPosition(source:ts.AnyOf3<global.phaser.types.math.Vector2Like, global.phaser.types.math.Vector3Like, global.phaser.types.math.Vector4Like>):Rope;
+	/**
 		Sets the position of this Game Object to be a random position within the confines of
 		the given area.
 		
@@ -670,6 +742,17 @@ package global.phaser.gameobjects;
 		Gets the world transform matrix for this Game Object, factoring in any parent Containers.
 	**/
 	function getWorldTransformMatrix(?tempMatrix:global.phaser.gameobjects.components.TransformMatrix, ?parentMatrix:global.phaser.gameobjects.components.TransformMatrix):global.phaser.gameobjects.components.TransformMatrix;
+	/**
+		Takes the given `x` and `y` coordinates and converts them into local space for this
+		Game Object, taking into account parent and local transforms, and the Display Origin.
+		
+		The returned Vector2 contains the translated point in its properties.
+		
+		A Camera needs to be provided in order to handle modified scroll factors. If no
+		camera is specified, it will use the `main` camera from the Scene to which this
+		Game Object belongs.
+	**/
+	function getLocalPoint(x:Float, y:Float, ?point:global.phaser.math.Vector2, ?camera:global.phaser.cameras.scene2d.Camera):global.phaser.math.Vector2;
 	/**
 		Gets the sum total rotation of all of this Game Objects parent Containers.
 		
@@ -842,7 +925,7 @@ package global.phaser.gameobjects;
 		
 		You can also provide an Input Configuration Object as the only argument to this method.
 	**/
-	function setInteractive(?shape:Dynamic, ?callback:global.phaser.types.input.HitAreaCallback, ?dropZone:Bool):Rope;
+	function setInteractive(?hitArea:Dynamic, ?callback:global.phaser.types.input.HitAreaCallback, ?dropZone:Bool):Rope;
 	/**
 		If this Game Object has previously been enabled for input, this will disable it.
 		

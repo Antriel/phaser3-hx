@@ -6,10 +6,10 @@ typedef VideoFileConfig = {
 	**/
 	var key : ts.AnyOf2<String, VideoFileConfig>;
 	/**
-		The absolute or relative URL to load this file from in a config object.
+		The absolute or relative URLs to load the video files from.
 	**/
 	@:optional
-	var urlConfig : Dynamic;
+	var url : ts.AnyOf2<String, Array<String>>;
 	/**
 		The load event to listen for when _not_ loading as a blob. Either 'loadeddata', 'canplay' or 'canplaythrough'.
 	**/

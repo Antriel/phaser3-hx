@@ -6,6 +6,10 @@ package global.phaser.sound;
 @:native("Phaser.Sound.WebAudioSound") extern class WebAudioSound extends BaseSound {
 	function new(manager:WebAudioSoundManager, key:String, ?config:global.phaser.types.sound.SoundConfig);
 	/**
+		Update method called automatically by sound manager on every game step.
+	**/
+	private function update():Void;
+	/**
 		Rate at which this Sound will be played.
 		Value of 1.0 plays the audio at full speed, 0.5 plays the audio at half speed
 		and 2.0 doubles the audios playback speed.
@@ -64,6 +68,18 @@ package global.phaser.sound;
 		Sets the loop state of this Sound.
 	**/
 	function setLoop(value:Bool):WebAudioSound;
+	/**
+		Gets or sets the pan of this sound, a value between -1 (full left pan) and 1 (full right pan).
+		
+		Always returns zero on iOS / Safari as it doesn't support the stereo panner node.
+	**/
+	var pan : Float;
+	/**
+		Sets the pan of this sound, a value between -1 (full left pan) and 1 (full right pan).
+		
+		Note: iOS / Safari doesn't support the stereo panner node.
+	**/
+	function setPan(value:Float):WebAudioSound;
 	/**
 		Add a listener for a given event.
 	**/

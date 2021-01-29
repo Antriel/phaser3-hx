@@ -11,6 +11,26 @@ package global.phaser.gameobjects;
 @:native("Phaser.GameObjects.GameObjectCreator") extern class GameObjectCreator {
 	function new(scene:global.phaser.Scene);
 	/**
+		The Scene to which this Game Object Creator belongs.
+	**/
+	private var scene : global.phaser.Scene;
+	/**
+		A reference to the Scene.Systems.
+	**/
+	private var systems : global.phaser.scenes.Systems;
+	/**
+		A reference to the Scene Event Emitter.
+	**/
+	private var events : global.phaser.events.EventEmitter;
+	/**
+		A reference to the Scene Display List.
+	**/
+	private var displayList : DisplayList;
+	/**
+		A reference to the Scene Update List.
+	**/
+	private var updateList : UpdateList;
+	/**
 		Creates a new Dynamic Bitmap Text Game Object and returns it.
 		
 		Note: This method will only be available if the Dynamic Bitmap Text Game Object has been built into Phaser.
@@ -35,22 +55,6 @@ package global.phaser.gameobjects;
 	**/
 	function container(config:Dynamic, ?addToScene:Bool):Container;
 	/**
-		The Scene to which this Game Object Creator belongs.
-	**/
-	private var scene : global.phaser.Scene;
-	/**
-		A reference to the Scene.Systems.
-	**/
-	private var systems : global.phaser.scenes.Systems;
-	/**
-		A reference to the Scene Display List.
-	**/
-	private var displayList : DisplayList;
-	/**
-		A reference to the Scene Update List.
-	**/
-	private var updateList : UpdateList;
-	/**
 		Creates a new Graphics Game Object and returns it.
 		
 		Note: This method will only be available if the Graphics Game Object has been built into Phaser.
@@ -69,6 +73,12 @@ package global.phaser.gameobjects;
 	**/
 	function image(config:Dynamic, ?addToScene:Bool):Image;
 	/**
+		Creates a new Layer Game Object and returns it.
+		
+		Note: This method will only be available if the Layer Game Object has been built into Phaser.
+	**/
+	function layer(config:Dynamic, ?addToScene:Bool):Layer;
+	/**
 		Creates a new Mesh Game Object and returns it.
 		
 		Note: This method will only be available if the Mesh Game Object and WebGL support have been built into Phaser.
@@ -81,11 +91,11 @@ package global.phaser.gameobjects;
 	**/
 	function particles(config:Dynamic, ?addToScene:Bool):global.phaser.gameobjects.particles.ParticleEmitterManager;
 	/**
-		Creates a new Quad Game Object and returns it.
+		Creates a new Point Light Game Object and returns it.
 		
-		Note: This method will only be available if the Quad Game Object and WebGL support have been built into Phaser.
+		Note: This method will only be available if the Point Light Game Object has been built into Phaser.
 	**/
-	function quad(config:Dynamic, ?addToScene:Bool):Quad;
+	function pointlight(config:Dynamic, ?addToScene:Bool):PointLight;
 	/**
 		Creates a new Render Texture Game Object and returns it.
 		
@@ -115,7 +125,7 @@ package global.phaser.gameobjects;
 		
 		Note: This method will only be available if the Text Game Object has been built into Phaser.
 	**/
-	function text(config:Dynamic, ?addToScene:Bool):Text;
+	function text(config:global.phaser.types.gameobjects.text.TextConfig, ?addToScene:Bool):Text;
 	/**
 		Creates a new TileSprite Game Object and returns it.
 		

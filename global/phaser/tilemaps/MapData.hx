@@ -46,7 +46,7 @@ package global.phaser.tilemaps;
 	/**
 		The orientation of the map data (i.e. orthogonal, isometric, hexagonal), default 'orthogonal'.
 	**/
-	var orientation : String;
+	var orientation : Orientation;
 	/**
 		Determines the draw order of tilemap. Default is right-down
 		
@@ -92,5 +92,10 @@ package global.phaser.tilemaps;
 		An array of tile instances.
 	**/
 	var tiles : Array<Dynamic>;
+	/**
+		The length of the horizontal sides of the hexagon.
+		Only used for hexagonal orientation Tilemaps.
+	**/
+	var hexSideLength : Float;
 	static var prototype : MapData;
 }

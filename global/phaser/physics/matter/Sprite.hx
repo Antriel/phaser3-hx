@@ -21,6 +21,8 @@ package global.phaser.physics.matter;
 		Creates and returns a Bitmap Mask. This mask can be used by any Game Object,
 		including this one.
 		
+		Note: Bitmap Masks only work on WebGL. Geometry Masks work on both WebGL and Canvas.
+		
 		To create the mask you need to pass in a reference to a renderable Game Object.
 		A renderable Game Object is one that uses a texture to render with, such as an
 		Image, Sprite, Render Texture or BitmapText.
@@ -279,9 +281,203 @@ package global.phaser.physics.matter;
 	**/
 	function setVelocity(x:Float, ?y:Float):global.phaser.gameobjects.GameObject;
 	/**
-		Start playing the given animation.
+		Start playing the given animation on this Sprite.
+		
+		Animations in Phaser can either belong to the global Animation Manager, or specifically to this Sprite.
+		
+		The benefit of a global animation is that multiple Sprites can all play the same animation, without
+		having to duplicate the data. You can just create it once and then play it on any Sprite.
+		
+		The following code shows how to create a global repeating animation. The animation will be created
+		from all of the frames within the sprite sheet that was loaded with the key 'muybridge':
+		
+		```javascript
+		var config = {
+		     key: 'run',
+		     frames: 'muybridge',
+		     frameRate: 15,
+		     repeat: -1
+		};
+		
+		//  This code should be run from within a Scene:
+		this.anims.create(config);
+		```
+		
+		However, if you wish to create an animation that is unique to this Sprite, and this Sprite alone,
+		you can call the `Animation.create` method instead. It accepts the exact same parameters as when
+		creating a global animation, however the resulting data is kept locally in this Sprite.
+		
+		With the animation created, either globally or locally, you can now play it on this Sprite:
+		
+		```javascript
+		this.add.sprite(x, y).play('run');
+		```
+		
+		Alternatively, if you wish to run it at a different frame rate, for example, you can pass a config
+		object instead:
+		
+		```javascript
+		this.add.sprite(x, y).play({ key: 'run', frameRate: 24 });
+		```
+		
+		When playing an animation on a Sprite it will first check to see if it can find a matching key
+		locally within the Sprite. If it can, it will play the local animation. If not, it will then
+		search the global Animation Manager and look for it there.
+		
+		If you need a Sprite to be able to play both local and global animations, make sure they don't
+		have conflicting keys.
+		
+		See the documentation for the `PlayAnimationConfig` config object for more details about this.
+		
+		Also, see the documentation in the Animation Manager for further details on creating animations.
 	**/
-	function play(key:String, ?ignoreIfPlaying:Bool, ?startFrame:Float):Sprite;
+	function play(key:ts.AnyOf3<String, global.phaser.animations.Animation, global.phaser.types.animations.PlayAnimationConfig>, ?ignoreIfPlaying:Bool):Sprite;
+	/**
+		Start playing the given animation on this Sprite, in reverse.
+		
+		Animations in Phaser can either belong to the global Animation Manager, or specifically to this Sprite.
+		
+		The benefit of a global animation is that multiple Sprites can all play the same animation, without
+		having to duplicate the data. You can just create it once and then play it on any Sprite.
+		
+		The following code shows how to create a global repeating animation. The animation will be created
+		from all of the frames within the sprite sheet that was loaded with the key 'muybridge':
+		
+		```javascript
+		var config = {
+		     key: 'run',
+		     frames: 'muybridge',
+		     frameRate: 15,
+		     repeat: -1
+		};
+		
+		//  This code should be run from within a Scene:
+		this.anims.create(config);
+		```
+		
+		However, if you wish to create an animation that is unique to this Sprite, and this Sprite alone,
+		you can call the `Animation.create` method instead. It accepts the exact same parameters as when
+		creating a global animation, however the resulting data is kept locally in this Sprite.
+		
+		With the animation created, either globally or locally, you can now play it on this Sprite:
+		
+		```javascript
+		this.add.sprite(x, y).playReverse('run');
+		```
+		
+		Alternatively, if you wish to run it at a different frame rate, for example, you can pass a config
+		object instead:
+		
+		```javascript
+		this.add.sprite(x, y).playReverse({ key: 'run', frameRate: 24 });
+		```
+		
+		When playing an animation on a Sprite it will first check to see if it can find a matching key
+		locally within the Sprite. If it can, it will play the local animation. If not, it will then
+		search the global Animation Manager and look for it there.
+		
+		If you need a Sprite to be able to play both local and global animations, make sure they don't
+		have conflicting keys.
+		
+		See the documentation for the `PlayAnimationConfig` config object for more details about this.
+		
+		Also, see the documentation in the Animation Manager for further details on creating animations.
+	**/
+	function playReverse(key:ts.AnyOf3<String, global.phaser.animations.Animation, global.phaser.types.animations.PlayAnimationConfig>, ?ignoreIfPlaying:Bool):Sprite;
+	/**
+		Waits for the specified delay, in milliseconds, then starts playback of the given animation.
+		
+		If the animation _also_ has a delay value set in its config, it will be **added** to the delay given here.
+		
+		If an animation is already running and a new animation is given to this method, it will wait for
+		the given delay before starting the new animation.
+		
+		If no animation is currently running, the given one begins after the delay.
+		
+		When playing an animation on a Sprite it will first check to see if it can find a matching key
+		locally within the Sprite. If it can, it will play the local animation. If not, it will then
+		search the global Animation Manager and look for it there.
+		
+		Prior to Phaser 3.50 this method was called 'delayedPlay'.
+	**/
+	function playAfterDelay(key:ts.AnyOf3<String, global.phaser.animations.Animation, global.phaser.types.animations.PlayAnimationConfig>, delay:Float):Sprite;
+	/**
+		Waits for the current animation to complete the `repeatCount` number of repeat cycles, then starts playback
+		of the given animation.
+		
+		You can use this to ensure there are no harsh jumps between two sets of animations, i.e. going from an
+		idle animation to a walking animation, by making them blend smoothly into each other.
+		
+		If no animation is currently running, the given one will start immediately.
+		
+		When playing an animation on a Sprite it will first check to see if it can find a matching key
+		locally within the Sprite. If it can, it will play the local animation. If not, it will then
+		search the global Animation Manager and look for it there.
+	**/
+	function playAfterRepeat(key:ts.AnyOf3<String, global.phaser.animations.Animation, global.phaser.types.animations.PlayAnimationConfig>, ?repeatCount:Float):Sprite;
+	/**
+		Sets an animation, or an array of animations, to be played immediately after the current one completes or stops.
+		
+		The current animation must enter a 'completed' state for this to happen, i.e. finish all of its repeats, delays, etc,
+		or have the `stop` method called directly on it.
+		
+		An animation set to repeat forever will never enter a completed state.
+		
+		You can chain a new animation at any point, including before the current one starts playing, during it,
+		or when it ends (via its `animationcomplete` event).
+		
+		Chained animations are specific to a Game Object, meaning different Game Objects can have different chained
+		animations without impacting the animation they're playing.
+		
+		Call this method with no arguments to reset all currently chained animations.
+		
+		When playing an animation on a Sprite it will first check to see if it can find a matching key
+		locally within the Sprite. If it can, it will play the local animation. If not, it will then
+		search the global Animation Manager and look for it there.
+	**/
+	function chain(key:ts.AnyOf6<String, global.phaser.animations.Animation, Array<String>, Array<global.phaser.animations.Animation>, global.phaser.types.animations.PlayAnimationConfig, Array<global.phaser.types.animations.PlayAnimationConfig>>):Sprite;
+	/**
+		Immediately stops the current animation from playing and dispatches the `ANIMATION_STOP` events.
+		
+		If no animation is playing, no event will be dispatched.
+		
+		If there is another animation queued (via the `chain` method) then it will start playing immediately.
+	**/
+	function stop():Sprite;
+	/**
+		Stops the current animation from playing after the specified time delay, given in milliseconds.
+		
+		It then dispatches the `ANIMATION_STOP` event.
+		
+		If no animation is running, no events will be dispatched.
+		
+		If there is another animation in the queue (set via the `chain` method) then it will start playing,
+		when the current one stops.
+	**/
+	function stopAfterDelay(delay:Float):Sprite;
+	/**
+		Stops the current animation from playing after the given number of repeats.
+		
+		It then dispatches the `ANIMATION_STOP` event.
+		
+		If no animation is running, no events will be dispatched.
+		
+		If there is another animation in the queue (set via the `chain` method) then it will start playing,
+		when the current one stops.
+	**/
+	function stopAfterRepeat(?repeatCount:Float):Sprite;
+	/**
+		Stops the current animation from playing when it next sets the given frame.
+		If this frame doesn't exist within the animation it will not stop it from playing.
+		
+		It then dispatches the `ANIMATION_STOP` event.
+		
+		If no animation is running, no events will be dispatched.
+		
+		If there is another animation in the queue (set via the `chain` method) then it will start playing,
+		when the current one stops.
+	**/
+	function stopOnFrame(frame:global.phaser.animations.AnimationFrame):Sprite;
 	/**
 		Sets the `active` property of this Game Object and returns this Game Object for further chaining.
 		A Game Object with its `active` property set to `true` will be updated by the Scenes UpdateList.
@@ -382,7 +578,7 @@ package global.phaser.physics.matter;
 		
 		You can also provide an Input Configuration Object as the only argument to this method.
 	**/
-	function setInteractive(?shape:Dynamic, ?callback:global.phaser.types.input.HitAreaCallback, ?dropZone:Bool):Sprite;
+	function setInteractive(?hitArea:Dynamic, ?callback:global.phaser.types.input.HitAreaCallback, ?dropZone:Bool):Sprite;
 	/**
 		If this Game Object has previously been enabled for input, this will disable it.
 		

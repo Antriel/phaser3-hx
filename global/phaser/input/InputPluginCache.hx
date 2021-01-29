@@ -11,7 +11,7 @@ package global.phaser.input;
 	/**
 		Returns the input plugin object from the cache based on the given key.
 	**/
-	static function getCore(key:String):global.phaser.types.input.InputPluginContainer;
+	static function getPlugin(key:String):global.phaser.types.input.InputPluginContainer;
 	/**
 		Installs all of the registered Input Plugins into the given target.
 	**/

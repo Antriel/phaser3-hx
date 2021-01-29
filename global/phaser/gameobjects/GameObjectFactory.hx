@@ -14,6 +14,33 @@ package global.phaser.gameobjects;
 	**/
 	function path(x:Float, y:Float):global.phaser.curves.Path;
 	/**
+		The Scene to which this Game Object Factory belongs.
+	**/
+	private var scene : global.phaser.Scene;
+	/**
+		A reference to the Scene.Systems.
+	**/
+	private var systems : global.phaser.scenes.Systems;
+	/**
+		A reference to the Scene Event Emitter.
+	**/
+	private var events : global.phaser.events.EventEmitter;
+	/**
+		A reference to the Scene Display List.
+	**/
+	private var displayList : DisplayList;
+	/**
+		A reference to the Scene Update List.
+	**/
+	private var updateList : UpdateList;
+	/**
+		Adds an existing Game Object to this Scene.
+		
+		If the Game Object renders, it will be added to the Display List.
+		If it has a `preUpdate` method, it will be added to the Update List.
+	**/
+	function existing<G>(child:G):G;
+	/**
 		Creates a new Dynamic Bitmap Text Game Object and adds it to the Scene.
 		
 		BitmapText objects work by taking a texture file and an XML or JSON file that describes the font structure.
@@ -147,29 +174,6 @@ package global.phaser.gameobjects;
 	@:native("extern")
 	function extern_():Extern;
 	/**
-		The Scene to which this Game Object Factory belongs.
-	**/
-	private var scene : global.phaser.Scene;
-	/**
-		A reference to the Scene.Systems.
-	**/
-	private var systems : global.phaser.scenes.Systems;
-	/**
-		A reference to the Scene Display List.
-	**/
-	private var displayList : DisplayList;
-	/**
-		A reference to the Scene Update List.
-	**/
-	private var updateList : UpdateList;
-	/**
-		Adds an existing Game Object to this Scene.
-		
-		If the Game Object renders, it will be added to the Display List.
-		If it has a `preUpdate` method, it will be added to the Update List.
-	**/
-	function existing(child:ts.AnyOf2<GameObject, Group>):GameObject;
-	/**
 		Creates a new Graphics Game Object and adds it to the Scene.
 		
 		Note: This method will only be available if the Graphics Game Object has been built into Phaser.
@@ -188,11 +192,17 @@ package global.phaser.gameobjects;
 	**/
 	function image(x:Float, y:Float, texture:ts.AnyOf2<String, global.phaser.textures.Texture>, ?frame:ts.AnyOf2<String, Float>):Image;
 	/**
+		Creates a new Layer Game Object and adds it to the Scene.
+		
+		Note: This method will only be available if the Layer Game Object has been built into Phaser.
+	**/
+	function layer(?children:ts.AnyOf2<GameObject, Array<GameObject>>):Layer;
+	/**
 		Creates a new Mesh Game Object and adds it to the Scene.
 		
 		Note: This method will only be available if the Mesh Game Object and WebGL support have been built into Phaser.
 	**/
-	function mesh(x:Float, y:Float, vertices:Array<Float>, uv:Array<Float>, colors:Array<Float>, alphas:Array<Float>, texture:ts.AnyOf2<String, global.phaser.textures.Texture>, ?frame:ts.AnyOf2<String, Float>):Mesh;
+	function mesh(?x:Float, ?y:Float, ?texture:ts.AnyOf2<String, global.phaser.textures.Texture>, ?frame:ts.AnyOf2<String, Float>, ?vertices:Array<Float>, ?uvs:Array<Float>, ?indicies:Array<Float>, ?containsZ:Bool, ?normals:Array<Float>, ?colors:ts.AnyOf2<Float, Array<Float>>, ?alphas:ts.AnyOf2<Float, Array<Float>>):Mesh;
 	/**
 		Creates a new Particle Emitter Manager Game Object and adds it to the Scene.
 		
@@ -206,11 +216,35 @@ package global.phaser.gameobjects;
 	**/
 	function follower(path:global.phaser.curves.Path, x:Float, y:Float, texture:ts.AnyOf2<String, global.phaser.textures.Texture>, ?frame:ts.AnyOf2<String, Float>):PathFollower;
 	/**
-		Creates a new Quad Game Object and adds it to the Scene.
+		Creates a new Point Light Game Object and adds it to the Scene.
 		
-		Note: This method will only be available if the Quad Game Object and WebGL support have been built into Phaser.
+		Note: This method will only be available if the Point Light Game Object has been built into Phaser.
+		
+		The Point Light Game Object provides a way to add a point light effect into your game,
+		without the expensive shader processing requirements of the traditional Light Game Object.
+		
+		The difference is that the Point Light renders using a custom shader, designed to give the
+		impression of a point light source, of variable radius, intensity and color, in your game.
+		However, unlike the Light Game Object, it does not impact any other Game Objects, or use their
+		normal maps for calcuations. This makes them extremely fast to render compared to Lights
+		and perfect for special effects, such as flickering torches or muzzle flashes.
+		
+		For maximum performance you should batch Point Light Game Objects together. This means
+		ensuring they follow each other consecutively on the display list. Ideally, use a Layer
+		Game Object and then add just Point Lights to it, so that it can batch together the rendering
+		of the lights. You don't _have_ to do this, and if you've only a handful of Point Lights in
+		your game then it's perfectly safe to mix them into the dislay list as normal. However, if
+		you're using a large number of them, please consider how they are mixed into the display list.
+		
+		The renderer will automatically cull Point Lights. Those with a radius that does not intersect
+		with the Camera will be skipped in the rendering list. This happens automatically and the
+		culled state is refreshed every frame, for every camera.
+		
+		The origin of a Point Light is always 0.5 and it cannot be changed.
+		
+		Point Lights are a WebGL only feature and do not have a Canvas counterpart.
 	**/
-	function quad(x:Float, y:Float, texture:ts.AnyOf2<String, global.phaser.textures.Texture>, ?frame:ts.AnyOf2<String, Float>):Quad;
+	function pointlight(x:Float, y:Float, ?color:Float, ?radius:Float, ?intensity:Float, ?attenuation:Float):PointLight;
 	/**
 		Creates a new Render Texture Game Object and adds it to the Scene.
 		
@@ -494,7 +528,7 @@ package global.phaser.gameobjects;
 		
 		Note: This method will only be available if the Text Game Object has been built into Phaser.
 	**/
-	function text(x:Float, y:Float, text:ts.AnyOf2<String, Array<String>>, ?style:Dynamic):Text;
+	function text(x:Float, y:Float, text:ts.AnyOf2<String, Array<String>>, ?style:global.phaser.types.gameobjects.text.TextStyle):Text;
 	/**
 		Creates a new TileSprite Game Object and adds it to the Scene.
 		

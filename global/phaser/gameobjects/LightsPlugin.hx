@@ -20,6 +20,8 @@ package global.phaser.gameobjects;
 	```javascript
 	sprite.setPipeline('Light2D');
 	```
+	
+	Note that you cannot use this pipeline on Graphics Game Objects or Shape Game Objects.
 **/
 @:native("Phaser.GameObjects.LightsPlugin") extern class LightsPlugin extends LightsManager {
 	function new(scene:global.phaser.Scene);

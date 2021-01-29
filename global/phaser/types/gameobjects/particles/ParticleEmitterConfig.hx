@@ -235,7 +235,12 @@ typedef ParticleEmitterConfig = {
 		As {@link Phaser.GameObjects.Particles.ParticleEmitter#setEmitZone}.
 	**/
 	@:optional
-	var emitZone : Dynamic;
+	var emitZone : ts.AnyOf2<ParticleEmitterEdgeZoneConfig, ParticleEmitterRandomZoneConfig>;
+	/**
+		As {@link Phaser.GameObjects.Particles.ParticleEmitter#setDeathZone}.
+	**/
+	@:optional
+	var deathZone : ParticleEmitterDeathZoneConfig;
 	/**
 		As {@link Phaser.GameObjects.Particles.ParticleEmitter#setBounds}.
 	**/
@@ -263,4 +268,9 @@ typedef ParticleEmitterConfig = {
 	**/
 	@:optional
 	var frame : ts.AnyOf7<String, Float, global.phaser.textures.Frame, Array<String>, Array<Float>, Array<global.phaser.textures.Frame>, ParticleEmitterFrameConfig>;
+	/**
+		Creates specified number of inactive particles and adds them to this emitter's pool. {@link Phaser.GameObjects.Particles.ParticleEmitter#reserve}
+	**/
+	@:optional
+	var reserve : Float;
 };

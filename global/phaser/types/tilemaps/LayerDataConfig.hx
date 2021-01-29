@@ -100,5 +100,5 @@ typedef LayerDataConfig = {
 		A reference to the Tilemap layer that owns this data.
 	**/
 	@:optional
-	var tilemapLayer : ts.AnyOf2<global.phaser.tilemaps.DynamicTilemapLayer, global.phaser.tilemaps.StaticTilemapLayer>;
+	var tilemapLayer : global.phaser.tilemaps.TilemapLayer;
 };

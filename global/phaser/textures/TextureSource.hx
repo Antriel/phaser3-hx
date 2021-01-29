@@ -78,6 +78,16 @@ package global.phaser.textures;
 	**/
 	var glTexture : js.html.webgl.Texture;
 	/**
+		The current texture unit index as assigned by the WebGL Renderer.
+		Un-used in canvas. Should be treated as read-only.
+	**/
+	var glIndex : Float;
+	/**
+		The counter value when this texture was last assigned an index by the WebGL Renderer.
+		Un-used in canvas. Should be treated as read-only.
+	**/
+	var glIndexCounter : Float;
+	/**
 		Sets the `UNPACK_FLIP_Y_WEBGL` flag the WebGL Texture uses during upload.
 	**/
 	var flipY : Bool;

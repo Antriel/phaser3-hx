@@ -2,6 +2,14 @@ package global.phaser.scenes;
 
 @:native("Phaser.Scenes.Events") @valueModuleOnly extern class Events {
 	/**
+		The Game Object Added to Scene Event.
+		
+		This event is dispatched when a Game Object is added to a Scene.
+		
+		Listen for it from a Scene using `this.scene.events.on('addedtoscene', listener)`.
+	**/
+	static final ADDED_TO_SCENE : Dynamic;
+	/**
 		The Scene Systems Boot Event.
 		
 		This event is dispatched by a Scene during the Scene Systems boot process. Primarily used by Scene Plugins.
@@ -86,6 +94,14 @@ package global.phaser.scenes;
 		Listen to it from a Scene using `this.scene.events.on('ready', listener)`.
 	**/
 	static final READY : Dynamic;
+	/**
+		The Game Object Removed from Scene Event.
+		
+		This event is dispatched when a Game Object is removed from a Scene.
+		
+		Listen for it from a Scene using `this.scene.events.on('removedfromscene', listener)`.
+	**/
+	static final REMOVED_FROM_SCENE : Dynamic;
 	/**
 		The Scene Systems Render Event.
 		

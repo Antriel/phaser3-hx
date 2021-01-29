@@ -8,10 +8,22 @@ package global.phaser.gameobjects;
 @:native("Phaser.GameObjects.GameObject") extern class GameObject extends global.phaser.events.EventEmitter {
 	function new(scene:global.phaser.Scene, type:String);
 	/**
-		The Scene to which this Game Object belongs.
+		A reference to the Scene to which this Game Object belongs.
+		
 		Game Objects can only belong to one Scene.
+		
+		You should consider this property as being read-only. You cannot move a
+		Game Object to another Scene by simply changing it.
 	**/
-	private var scene : global.phaser.Scene;
+	var scene : global.phaser.Scene;
+	/**
+		Holds a reference to the Display List that contains this Game Object.
+		
+		This is set automatically when this Game Object is added to a Scene or Layer.
+		
+		You should treat this property as being read-only.
+	**/
+	var displayList : ts.AnyOf2<DisplayList, Layer>;
 	/**
 		A textual representation of this Game Object, i.e. `sprite`.
 		Used internally by Phaser but is available for your own custom classes to populate.
@@ -206,7 +218,7 @@ package global.phaser.gameobjects;
 		
 		You can also provide an Input Configuration Object as the only argument to this method.
 	**/
-	function setInteractive(?shape:Dynamic, ?callback:global.phaser.types.input.HitAreaCallback, ?dropZone:Bool):GameObject;
+	function setInteractive(?hitArea:Dynamic, ?callback:global.phaser.types.input.HitAreaCallback, ?dropZone:Bool):GameObject;
 	/**
 		If this Game Object has previously been enabled for input, this will disable it.
 		
@@ -239,6 +251,24 @@ package global.phaser.gameobjects;
 	**/
 	function removeInteractive():GameObject;
 	/**
+		This callback is invoked when this Game Object is added to a Scene.
+		
+		Can be overriden by custom Game Objects, but be aware of some Game Objects that
+		will use this, such as Sprites, to add themselves into the Update List.
+		
+		You can also listen for the `ADDED_TO_SCENE` event from this Game Object.
+	**/
+	function addedToScene():Void;
+	/**
+		This callback is invoked when this Game Object is removed from a Scene.
+		
+		Can be overriden by custom Game Objects, but be aware of some Game Objects that
+		will use this, such as Sprites, to removed themselves from the Update List.
+		
+		You can also listen for the `REMOVED_FROM_SCENE` event from this Game Object.
+	**/
+	function removedFromScene():Void;
+	/**
 		To be overridden by custom GameObjects. Allows base objects to be used in a Pool.
 	**/
 	function update(args:haxe.extern.Rest<Dynamic>):Void;
@@ -260,20 +290,6 @@ package global.phaser.gameobjects;
 		this Game Object and all of its ancestors.
 	**/
 	function getIndexList():Array<Float>;
-	/**
-		Destroys this Game Object removing it from the Display List and Update List and
-		severing all ties to parent resources.
-		
-		Also removes itself from the Input Manager and Physics Manager if previously enabled.
-		
-		Use this to remove a Game Object from your game if you don't ever plan to use it again.
-		As long as no reference to it exists within your own code it should become free for
-		garbage collection by the browser.
-		
-		If you just want to temporarily disable an object then look at using the
-		Game Object Pool instead of destroying it, as destroyed objects cannot be resurrected.
-	**/
-	function destroy(?fromScene:Bool):Void;
 	/**
 		Add a listener for a given event.
 	**/

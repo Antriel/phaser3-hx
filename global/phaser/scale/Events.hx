@@ -20,6 +20,8 @@ package global.phaser.scale;
 	static final LEAVE_FULLSCREEN : Dynamic;
 	/**
 		The Scale Manager Orientation Change Event.
+		
+		This event is dispatched whenever the Scale Manager detects an orientation change event from the browser.
 	**/
 	static final ORIENTATION_CHANGE : Dynamic;
 	/**

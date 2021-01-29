@@ -62,6 +62,10 @@ typedef Transform = {
 	**/
 	function setPosition(?x:Float, ?y:Float, ?z:Float, ?w:Float):Transform;
 	/**
+		Copies an object's coordinates to this Game Object's position.
+	**/
+	function copyPosition(source:ts.AnyOf3<global.phaser.types.math.Vector2Like, global.phaser.types.math.Vector3Like, global.phaser.types.math.Vector4Like>):Transform;
+	/**
 		Sets the position of this Game Object to be a random position within the confines of
 		the given area.
 		
@@ -110,6 +114,17 @@ typedef Transform = {
 		Gets the world transform matrix for this Game Object, factoring in any parent Containers.
 	**/
 	function getWorldTransformMatrix(?tempMatrix:TransformMatrix, ?parentMatrix:TransformMatrix):TransformMatrix;
+	/**
+		Takes the given `x` and `y` coordinates and converts them into local space for this
+		Game Object, taking into account parent and local transforms, and the Display Origin.
+		
+		The returned Vector2 contains the translated point in its properties.
+		
+		A Camera needs to be provided in order to handle modified scroll factors. If no
+		camera is specified, it will use the `main` camera from the Scene to which this
+		Game Object belongs.
+	**/
+	function getLocalPoint(x:Float, y:Float, ?point:global.phaser.math.Vector2, ?camera:global.phaser.cameras.scene2d.Camera):global.phaser.math.Vector2;
 	/**
 		Gets the sum total rotation of all of this Game Objects parent Containers.
 		

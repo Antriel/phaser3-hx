@@ -247,6 +247,8 @@ package global.phaser.gameobjects;
 		Creates and returns a Bitmap Mask. This mask can be used by any Game Object,
 		including this one.
 		
+		Note: Bitmap Masks only work on WebGL. Geometry Masks work on both WebGL and Canvas.
+		
 		To create the mask you need to pass in a reference to a renderable Game Object.
 		A renderable Game Object is one that uses a texture to render with, such as an
 		Image, Sprite, Render Texture or BitmapText.
@@ -316,6 +318,8 @@ package global.phaser.gameobjects;
 	function updateDisplayOrigin():Image;
 	/**
 		The initial WebGL pipeline of this Game Object.
+		
+		If you call `resetPipeline` on this Game Object, the pipeline is reset to this default.
 	**/
 	var defaultPipeline : global.phaser.renderer.webgl.WebGLPipeline;
 	/**
@@ -323,18 +327,84 @@ package global.phaser.gameobjects;
 	**/
 	var pipeline : global.phaser.renderer.webgl.WebGLPipeline;
 	/**
-		Sets the initial WebGL Pipeline of this Game Object.
-		This should only be called during the instantiation of the Game Object.
+		Does this Game Object have any Post Pipelines set?
 	**/
-	function initPipeline(?pipelineName:String):Bool;
+	var hasPostPipeline : Bool;
 	/**
-		Sets the active WebGL Pipeline of this Game Object.
+		The WebGL Post FX Pipelines this Game Object uses for post-render effects.
+		
+		The pipelines are processed in the order in which they appear in this array.
+		
+		If you modify this array directly, be sure to set the
+		`hasPostPipeline` property accordingly.
 	**/
-	function setPipeline(pipelineName:String):Image;
+	var postPipeline : Array<global.phaser.renderer.webgl.pipelines.PostFXPipeline>;
+	/**
+		An object to store pipeline specific data in, to be read by the pipelines this Game Object uses.
+	**/
+	var pipelineData : Dynamic;
+	/**
+		Sets the initial WebGL Pipeline of this Game Object.
+		
+		This should only be called during the instantiation of the Game Object. After that, use `setPipeline`.
+	**/
+	function initPipeline(pipeline:ts.AnyOf2<String, global.phaser.renderer.webgl.WebGLPipeline>):Bool;
+	/**
+		Sets the main WebGL Pipeline of this Game Object.
+		
+		Also sets the `pipelineData` property, if the parameter is given.
+		
+		Both the pipeline and post pipelines share the same pipeline data object.
+	**/
+	function setPipeline(pipeline:ts.AnyOf2<String, global.phaser.renderer.webgl.WebGLPipeline>, ?pipelineData:Dynamic, ?copyData:Bool):Image;
+	/**
+		Sets one, or more, Post Pipelines on this Game Object.
+		
+		Post Pipelines are invoked after this Game Object has rendered to its target and
+		are commonly used for post-fx.
+		
+		The post pipelines are appended to the `postPipelines` array belonging to this
+		Game Object. When the renderer processes this Game Object, it iterates through the post
+		pipelines in the order in which they appear in the array. If you are stacking together
+		multiple effects, be aware that the order is important.
+		
+		If you call this method multiple times, the new pipelines will be appended to any existing
+		post pipelines already set. Use the `resetPostPipeline` method to clear them first, if required.
+		
+		You can optionally also sets the `pipelineData` property, if the parameter is given.
+		
+		Both the pipeline and post pipelines share the pipeline data object together.
+	**/
+	function setPostPipeline(pipelines:ts.AnyOf6<String, haxe.Constraints.Function, Array<haxe.Constraints.Function>, Array<String>, global.phaser.renderer.webgl.pipelines.PostFXPipeline, Array<global.phaser.renderer.webgl.pipelines.PostFXPipeline>>, ?pipelineData:Dynamic, ?copyData:Bool):Image;
+	/**
+		Adds an entry to the `pipelineData` object belonging to this Game Object.
+		
+		If the 'key' already exists, its value is updated. If it doesn't exist, it is created.
+		
+		If `value` is undefined, and `key` exists, `key` is removed from the data object.
+		
+		Both the pipeline and post pipelines share the pipeline data object together.
+	**/
+	function setPipelineData(key:String, ?value:Dynamic):Image;
+	/**
+		Gets a Post Pipeline instance from this Game Object, based on the given name, and returns it.
+	**/
+	function getPostPipeline(pipeline:ts.AnyOf3<String, haxe.Constraints.Function, global.phaser.renderer.webgl.pipelines.PostFXPipeline>):ts.AnyOf2<global.phaser.renderer.webgl.pipelines.PostFXPipeline, Array<global.phaser.renderer.webgl.pipelines.PostFXPipeline>>;
 	/**
 		Resets the WebGL Pipeline of this Game Object back to the default it was created with.
 	**/
-	function resetPipeline():Bool;
+	function resetPipeline(?resetPostPipelines:Bool, ?resetData:Bool):Bool;
+	/**
+		Resets the WebGL Post Pipelines of this Game Object. It does this by calling
+		the `destroy` method on each post pipeline and then clearing the local array.
+	**/
+	function resetPostPipeline(?resetData:Bool):Void;
+	/**
+		Removes a type of Post Pipeline instances from this Game Object, based on the given name, and destroys them.
+		
+		If you wish to remove all Post Pipelines use the `resetPostPipeline` method instead.
+	**/
+	function removePostPipeline(pipeline:ts.AnyOf2<String, global.phaser.renderer.webgl.pipelines.PostFXPipeline>):Image;
 	/**
 		Gets the name of the WebGL Pipeline this Game Object is currently using.
 	**/
@@ -511,7 +581,34 @@ package global.phaser.gameobjects;
 	**/
 	function setFrame(frame:ts.AnyOf2<String, Float>, ?updateSize:Bool, ?updateOrigin:Bool):Image;
 	/**
-		Fill or additive?
+		The tint value being applied to the top-left vertice of the Game Object.
+		This value is interpolated from the corner to the center of the Game Object.
+		The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+	**/
+	var tintTopLeft : Float;
+	/**
+		The tint value being applied to the top-right vertice of the Game Object.
+		This value is interpolated from the corner to the center of the Game Object.
+		The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+	**/
+	var tintTopRight : Float;
+	/**
+		The tint value being applied to the bottom-left vertice of the Game Object.
+		This value is interpolated from the corner to the center of the Game Object.
+		The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+	**/
+	var tintBottomLeft : Float;
+	/**
+		The tint value being applied to the bottom-right vertice of the Game Object.
+		This value is interpolated from the corner to the center of the Game Object.
+		The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+	**/
+	var tintBottomRight : Float;
+	/**
+		The tint fill mode.
+		
+		`false` = An additive tint (the default), where vertices colors are blended with the texture.
+		`true` = A fill tint, where the vertices colors replace the texture, but respects texture alpha.
 	**/
 	var tintFill : Bool;
 	/**
@@ -557,32 +654,15 @@ package global.phaser.gameobjects;
 	**/
 	function setTintFill(?topLeft:Float, ?topRight:Float, ?bottomLeft:Float, ?bottomRight:Float):Image;
 	/**
-		The tint value being applied to the top-left of the Game Object.
-		This value is interpolated from the corner to the center of the Game Object.
-	**/
-	var tintTopLeft : Float;
-	/**
-		The tint value being applied to the top-right of the Game Object.
-		This value is interpolated from the corner to the center of the Game Object.
-	**/
-	var tintTopRight : Float;
-	/**
-		The tint value being applied to the bottom-left of the Game Object.
-		This value is interpolated from the corner to the center of the Game Object.
-	**/
-	var tintBottomLeft : Float;
-	/**
-		The tint value being applied to the bottom-right of the Game Object.
-		This value is interpolated from the corner to the center of the Game Object.
-	**/
-	var tintBottomRight : Float;
-	/**
 		The tint value being applied to the whole of the Game Object.
 		This property is a setter-only. Use the properties `tintTopLeft` etc to read the current tint value.
 	**/
 	var tint : Float;
 	/**
-		Does this Game Object have a tint applied to it or not?
+		Does this Game Object have a tint applied?
+		
+		It checks to see if the 4 tint properties are set to the value 0xffffff
+		and that the `tintFill` property is `false`. This indicates that a Game Object isn't tinted.
 	**/
 	final isTinted : Bool;
 	/**
@@ -643,6 +723,10 @@ package global.phaser.gameobjects;
 	**/
 	function setPosition(?x:Float, ?y:Float, ?z:Float, ?w:Float):Image;
 	/**
+		Copies an object's coordinates to this Game Object's position.
+	**/
+	function copyPosition(source:ts.AnyOf3<global.phaser.types.math.Vector2Like, global.phaser.types.math.Vector3Like, global.phaser.types.math.Vector4Like>):Image;
+	/**
 		Sets the position of this Game Object to be a random position within the confines of
 		the given area.
 		
@@ -691,6 +775,17 @@ package global.phaser.gameobjects;
 		Gets the world transform matrix for this Game Object, factoring in any parent Containers.
 	**/
 	function getWorldTransformMatrix(?tempMatrix:global.phaser.gameobjects.components.TransformMatrix, ?parentMatrix:global.phaser.gameobjects.components.TransformMatrix):global.phaser.gameobjects.components.TransformMatrix;
+	/**
+		Takes the given `x` and `y` coordinates and converts them into local space for this
+		Game Object, taking into account parent and local transforms, and the Display Origin.
+		
+		The returned Vector2 contains the translated point in its properties.
+		
+		A Camera needs to be provided in order to handle modified scroll factors. If no
+		camera is specified, it will use the `main` camera from the Scene to which this
+		Game Object belongs.
+	**/
+	function getLocalPoint(x:Float, y:Float, ?point:global.phaser.math.Vector2, ?camera:global.phaser.cameras.scene2d.Camera):global.phaser.math.Vector2;
 	/**
 		Gets the sum total rotation of all of this Game Objects parent Containers.
 		
@@ -809,7 +904,7 @@ package global.phaser.gameobjects;
 		
 		You can also provide an Input Configuration Object as the only argument to this method.
 	**/
-	function setInteractive(?shape:Dynamic, ?callback:global.phaser.types.input.HitAreaCallback, ?dropZone:Bool):Image;
+	function setInteractive(?hitArea:Dynamic, ?callback:global.phaser.types.input.HitAreaCallback, ?dropZone:Bool):Image;
 	/**
 		If this Game Object has previously been enabled for input, this will disable it.
 		

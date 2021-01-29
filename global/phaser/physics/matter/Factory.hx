@@ -302,7 +302,7 @@ package global.phaser.physics.matter;
 		You can also pass in either a Matter Body Configuration object, or a Matter Body instance
 		to link with this Game Object.
 	**/
-	function gameObject(gameObject:global.phaser.gameobjects.GameObject, ?options:ts.AnyOf2<global.phaser.types.physics.matter.MatterBodyConfig, global.matterjs.Body>, ?addToWorld:Bool):global.phaser.gameobjects.GameObject;
+	function gameObject(gameObject:global.phaser.gameobjects.GameObject, ?options:ts.AnyOf2<global.phaser.types.physics.matter.MatterBodyConfig, global.matterjs.Body>, ?addToWorld:Bool):ts.AnyOf3<global.phaser.gameobjects.GameObject, Image, Sprite>;
 	/**
 		Destroys this Factory.
 	**/

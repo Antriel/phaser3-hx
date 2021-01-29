@@ -175,5 +175,29 @@ package global.phaser.physics.arcade;
 		Toggles (flips) the visible state of each member of this group.
 	**/
 	function toggleVisible():StaticGroup;
+	/**
+		Add a listener for a given event.
+	**/
+	function on(event:ts.AnyOf2<String, js.lib.Symbol>, fn:haxe.Constraints.Function, ?context:Dynamic):StaticGroup;
+	/**
+		Add a listener for a given event.
+	**/
+	function addListener(event:ts.AnyOf2<String, js.lib.Symbol>, fn:haxe.Constraints.Function, ?context:Dynamic):StaticGroup;
+	/**
+		Add a one-time listener for a given event.
+	**/
+	function once(event:ts.AnyOf2<String, js.lib.Symbol>, fn:haxe.Constraints.Function, ?context:Dynamic):StaticGroup;
+	/**
+		Remove the listeners of a given event.
+	**/
+	function removeListener(event:ts.AnyOf2<String, js.lib.Symbol>, ?fn:haxe.Constraints.Function, ?context:Dynamic, ?once:Bool):StaticGroup;
+	/**
+		Remove the listeners of a given event.
+	**/
+	function off(event:ts.AnyOf2<String, js.lib.Symbol>, ?fn:haxe.Constraints.Function, ?context:Dynamic, ?once:Bool):StaticGroup;
+	/**
+		Remove all listeners, or those of the specified event.
+	**/
+	function removeAllListeners(?event:ts.AnyOf2<String, js.lib.Symbol>):StaticGroup;
 	static var prototype : StaticGroup;
 }

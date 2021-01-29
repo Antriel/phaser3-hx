@@ -6,6 +6,10 @@ package global.phaser.sound;
 @:native("Phaser.Sound.HTML5AudioSound") extern class HTML5AudioSound extends BaseSound {
 	function new(manager:HTML5AudioSoundManager, key:String, ?config:global.phaser.types.sound.SoundConfig);
 	/**
+		Update method called automatically by sound manager on every game step.
+	**/
+	private function update(time:Float):Void;
+	/**
 		Boolean indicating whether the sound is muted or not.
 		Gets or sets the muted state of this sound.
 	**/
@@ -64,6 +68,18 @@ package global.phaser.sound;
 		Sets the loop state of this Sound.
 	**/
 	function setLoop(value:Bool):HTML5AudioSound;
+	/**
+		Gets or sets the pan of this sound, a value between -1 (full left pan) and 1 (full right pan).
+		
+		Has no audible effect on HTML5 Audio Sound, but still generates the PAN Event.
+	**/
+	var pan : Float;
+	/**
+		Sets the pan of this sound, a value between -1 (full left pan) and 1 (full right pan).
+		
+		Has no audible effect on HTML5 Audio Sound, but still generates the PAN Event.
+	**/
+	function setPan(value:Float):HTML5AudioSound;
 	/**
 		Add a listener for a given event.
 	**/

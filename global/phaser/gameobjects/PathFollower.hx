@@ -165,9 +165,48 @@ package global.phaser.gameobjects;
 	**/
 	function updateDisplayOrigin():PathFollower;
 	/**
-		Sets the active WebGL Pipeline of this Game Object.
+		Sets the main WebGL Pipeline of this Game Object.
+		
+		Also sets the `pipelineData` property, if the parameter is given.
+		
+		Both the pipeline and post pipelines share the same pipeline data object.
 	**/
-	function setPipeline(pipelineName:String):PathFollower;
+	function setPipeline(pipeline:ts.AnyOf2<String, global.phaser.renderer.webgl.WebGLPipeline>, ?pipelineData:Dynamic, ?copyData:Bool):PathFollower;
+	/**
+		Sets one, or more, Post Pipelines on this Game Object.
+		
+		Post Pipelines are invoked after this Game Object has rendered to its target and
+		are commonly used for post-fx.
+		
+		The post pipelines are appended to the `postPipelines` array belonging to this
+		Game Object. When the renderer processes this Game Object, it iterates through the post
+		pipelines in the order in which they appear in the array. If you are stacking together
+		multiple effects, be aware that the order is important.
+		
+		If you call this method multiple times, the new pipelines will be appended to any existing
+		post pipelines already set. Use the `resetPostPipeline` method to clear them first, if required.
+		
+		You can optionally also sets the `pipelineData` property, if the parameter is given.
+		
+		Both the pipeline and post pipelines share the pipeline data object together.
+	**/
+	function setPostPipeline(pipelines:ts.AnyOf6<String, haxe.Constraints.Function, Array<haxe.Constraints.Function>, Array<String>, global.phaser.renderer.webgl.pipelines.PostFXPipeline, Array<global.phaser.renderer.webgl.pipelines.PostFXPipeline>>, ?pipelineData:Dynamic, ?copyData:Bool):PathFollower;
+	/**
+		Adds an entry to the `pipelineData` object belonging to this Game Object.
+		
+		If the 'key' already exists, its value is updated. If it doesn't exist, it is created.
+		
+		If `value` is undefined, and `key` exists, `key` is removed from the data object.
+		
+		Both the pipeline and post pipelines share the pipeline data object together.
+	**/
+	function setPipelineData(key:String, ?value:Dynamic):PathFollower;
+	/**
+		Removes a type of Post Pipeline instances from this Game Object, based on the given name, and destroys them.
+		
+		If you wish to remove all Post Pipelines use the `resetPostPipeline` method instead.
+	**/
+	function removePostPipeline(pipeline:ts.AnyOf2<String, global.phaser.renderer.webgl.pipelines.PostFXPipeline>):PathFollower;
 	/**
 		Sets the scroll factor of this Game Object.
 		
@@ -304,6 +343,10 @@ package global.phaser.gameobjects;
 	**/
 	function setPosition(?x:Float, ?y:Float, ?z:Float, ?w:Float):PathFollower;
 	/**
+		Copies an object's coordinates to this Game Object's position.
+	**/
+	function copyPosition(source:ts.AnyOf3<global.phaser.types.math.Vector2Like, global.phaser.types.math.Vector3Like, global.phaser.types.math.Vector4Like>):PathFollower;
+	/**
 		Sets the position of this Game Object to be a random position within the confines of
 		the given area.
 		
@@ -402,9 +445,203 @@ package global.phaser.gameobjects;
 	**/
 	function pathUpdate():Void;
 	/**
-		Start playing the given animation.
+		Start playing the given animation on this Sprite.
+		
+		Animations in Phaser can either belong to the global Animation Manager, or specifically to this Sprite.
+		
+		The benefit of a global animation is that multiple Sprites can all play the same animation, without
+		having to duplicate the data. You can just create it once and then play it on any Sprite.
+		
+		The following code shows how to create a global repeating animation. The animation will be created
+		from all of the frames within the sprite sheet that was loaded with the key 'muybridge':
+		
+		```javascript
+		var config = {
+		     key: 'run',
+		     frames: 'muybridge',
+		     frameRate: 15,
+		     repeat: -1
+		};
+		
+		//  This code should be run from within a Scene:
+		this.anims.create(config);
+		```
+		
+		However, if you wish to create an animation that is unique to this Sprite, and this Sprite alone,
+		you can call the `Animation.create` method instead. It accepts the exact same parameters as when
+		creating a global animation, however the resulting data is kept locally in this Sprite.
+		
+		With the animation created, either globally or locally, you can now play it on this Sprite:
+		
+		```javascript
+		this.add.sprite(x, y).play('run');
+		```
+		
+		Alternatively, if you wish to run it at a different frame rate, for example, you can pass a config
+		object instead:
+		
+		```javascript
+		this.add.sprite(x, y).play({ key: 'run', frameRate: 24 });
+		```
+		
+		When playing an animation on a Sprite it will first check to see if it can find a matching key
+		locally within the Sprite. If it can, it will play the local animation. If not, it will then
+		search the global Animation Manager and look for it there.
+		
+		If you need a Sprite to be able to play both local and global animations, make sure they don't
+		have conflicting keys.
+		
+		See the documentation for the `PlayAnimationConfig` config object for more details about this.
+		
+		Also, see the documentation in the Animation Manager for further details on creating animations.
 	**/
-	function play(key:String, ?ignoreIfPlaying:Bool, ?startFrame:Float):PathFollower;
+	function play(key:ts.AnyOf3<String, global.phaser.animations.Animation, global.phaser.types.animations.PlayAnimationConfig>, ?ignoreIfPlaying:Bool):PathFollower;
+	/**
+		Start playing the given animation on this Sprite, in reverse.
+		
+		Animations in Phaser can either belong to the global Animation Manager, or specifically to this Sprite.
+		
+		The benefit of a global animation is that multiple Sprites can all play the same animation, without
+		having to duplicate the data. You can just create it once and then play it on any Sprite.
+		
+		The following code shows how to create a global repeating animation. The animation will be created
+		from all of the frames within the sprite sheet that was loaded with the key 'muybridge':
+		
+		```javascript
+		var config = {
+		     key: 'run',
+		     frames: 'muybridge',
+		     frameRate: 15,
+		     repeat: -1
+		};
+		
+		//  This code should be run from within a Scene:
+		this.anims.create(config);
+		```
+		
+		However, if you wish to create an animation that is unique to this Sprite, and this Sprite alone,
+		you can call the `Animation.create` method instead. It accepts the exact same parameters as when
+		creating a global animation, however the resulting data is kept locally in this Sprite.
+		
+		With the animation created, either globally or locally, you can now play it on this Sprite:
+		
+		```javascript
+		this.add.sprite(x, y).playReverse('run');
+		```
+		
+		Alternatively, if you wish to run it at a different frame rate, for example, you can pass a config
+		object instead:
+		
+		```javascript
+		this.add.sprite(x, y).playReverse({ key: 'run', frameRate: 24 });
+		```
+		
+		When playing an animation on a Sprite it will first check to see if it can find a matching key
+		locally within the Sprite. If it can, it will play the local animation. If not, it will then
+		search the global Animation Manager and look for it there.
+		
+		If you need a Sprite to be able to play both local and global animations, make sure they don't
+		have conflicting keys.
+		
+		See the documentation for the `PlayAnimationConfig` config object for more details about this.
+		
+		Also, see the documentation in the Animation Manager for further details on creating animations.
+	**/
+	function playReverse(key:ts.AnyOf3<String, global.phaser.animations.Animation, global.phaser.types.animations.PlayAnimationConfig>, ?ignoreIfPlaying:Bool):PathFollower;
+	/**
+		Waits for the specified delay, in milliseconds, then starts playback of the given animation.
+		
+		If the animation _also_ has a delay value set in its config, it will be **added** to the delay given here.
+		
+		If an animation is already running and a new animation is given to this method, it will wait for
+		the given delay before starting the new animation.
+		
+		If no animation is currently running, the given one begins after the delay.
+		
+		When playing an animation on a Sprite it will first check to see if it can find a matching key
+		locally within the Sprite. If it can, it will play the local animation. If not, it will then
+		search the global Animation Manager and look for it there.
+		
+		Prior to Phaser 3.50 this method was called 'delayedPlay'.
+	**/
+	function playAfterDelay(key:ts.AnyOf3<String, global.phaser.animations.Animation, global.phaser.types.animations.PlayAnimationConfig>, delay:Float):PathFollower;
+	/**
+		Waits for the current animation to complete the `repeatCount` number of repeat cycles, then starts playback
+		of the given animation.
+		
+		You can use this to ensure there are no harsh jumps between two sets of animations, i.e. going from an
+		idle animation to a walking animation, by making them blend smoothly into each other.
+		
+		If no animation is currently running, the given one will start immediately.
+		
+		When playing an animation on a Sprite it will first check to see if it can find a matching key
+		locally within the Sprite. If it can, it will play the local animation. If not, it will then
+		search the global Animation Manager and look for it there.
+	**/
+	function playAfterRepeat(key:ts.AnyOf3<String, global.phaser.animations.Animation, global.phaser.types.animations.PlayAnimationConfig>, ?repeatCount:Float):PathFollower;
+	/**
+		Sets an animation, or an array of animations, to be played immediately after the current one completes or stops.
+		
+		The current animation must enter a 'completed' state for this to happen, i.e. finish all of its repeats, delays, etc,
+		or have the `stop` method called directly on it.
+		
+		An animation set to repeat forever will never enter a completed state.
+		
+		You can chain a new animation at any point, including before the current one starts playing, during it,
+		or when it ends (via its `animationcomplete` event).
+		
+		Chained animations are specific to a Game Object, meaning different Game Objects can have different chained
+		animations without impacting the animation they're playing.
+		
+		Call this method with no arguments to reset all currently chained animations.
+		
+		When playing an animation on a Sprite it will first check to see if it can find a matching key
+		locally within the Sprite. If it can, it will play the local animation. If not, it will then
+		search the global Animation Manager and look for it there.
+	**/
+	function chain(key:ts.AnyOf6<String, global.phaser.animations.Animation, Array<String>, Array<global.phaser.animations.Animation>, global.phaser.types.animations.PlayAnimationConfig, Array<global.phaser.types.animations.PlayAnimationConfig>>):PathFollower;
+	/**
+		Immediately stops the current animation from playing and dispatches the `ANIMATION_STOP` events.
+		
+		If no animation is playing, no event will be dispatched.
+		
+		If there is another animation queued (via the `chain` method) then it will start playing immediately.
+	**/
+	function stop():PathFollower;
+	/**
+		Stops the current animation from playing after the specified time delay, given in milliseconds.
+		
+		It then dispatches the `ANIMATION_STOP` event.
+		
+		If no animation is running, no events will be dispatched.
+		
+		If there is another animation in the queue (set via the `chain` method) then it will start playing,
+		when the current one stops.
+	**/
+	function stopAfterDelay(delay:Float):PathFollower;
+	/**
+		Stops the current animation from playing after the given number of repeats.
+		
+		It then dispatches the `ANIMATION_STOP` event.
+		
+		If no animation is running, no events will be dispatched.
+		
+		If there is another animation in the queue (set via the `chain` method) then it will start playing,
+		when the current one stops.
+	**/
+	function stopAfterRepeat(?repeatCount:Float):PathFollower;
+	/**
+		Stops the current animation from playing when it next sets the given frame.
+		If this frame doesn't exist within the animation it will not stop it from playing.
+		
+		It then dispatches the `ANIMATION_STOP` event.
+		
+		If no animation is running, no events will be dispatched.
+		
+		If there is another animation in the queue (set via the `chain` method) then it will start playing,
+		when the current one stops.
+	**/
+	function stopOnFrame(frame:global.phaser.animations.AnimationFrame):PathFollower;
 	/**
 		Sets the `active` property of this Game Object and returns this Game Object for further chaining.
 		A Game Object with its `active` property set to `true` will be updated by the Scenes UpdateList.
@@ -505,7 +742,7 @@ package global.phaser.gameobjects;
 		
 		You can also provide an Input Configuration Object as the only argument to this method.
 	**/
-	function setInteractive(?shape:Dynamic, ?callback:global.phaser.types.input.HitAreaCallback, ?dropZone:Bool):PathFollower;
+	function setInteractive(?hitArea:Dynamic, ?callback:global.phaser.types.input.HitAreaCallback, ?dropZone:Bool):PathFollower;
 	/**
 		If this Game Object has previously been enabled for input, this will disable it.
 		

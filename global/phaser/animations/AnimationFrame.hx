@@ -9,7 +9,7 @@ package global.phaser.animations;
 	AnimationFrames are generated automatically by the Animation class.
 **/
 @:native("Phaser.Animations.AnimationFrame") extern class AnimationFrame {
-	function new(textureKey:String, textureFrame:ts.AnyOf2<String, Float>, index:Float, frame:global.phaser.textures.Frame);
+	function new(textureKey:String, textureFrame:ts.AnyOf2<String, Float>, index:Float, frame:global.phaser.textures.Frame, ?isKeyFrame:Bool);
 	/**
 		The key of the Texture this AnimationFrame uses.
 	**/
@@ -52,6 +52,10 @@ package global.phaser.animations;
 		This value is generated when the animation is created and cached here.
 	**/
 	final progress : Float;
+	/**
+		Is this Frame a KeyFrame within the Animation?
+	**/
+	var isKeyFrame : Bool;
 	/**
 		Generates a JavaScript object suitable for converting to JSON.
 	**/

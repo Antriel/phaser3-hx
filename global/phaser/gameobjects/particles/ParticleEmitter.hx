@@ -115,7 +115,7 @@ package global.phaser.gameobjects.particles;
 	**/
 	var scaleY : EmitterOp;
 	/**
-		Color tint applied to emitted particles. Any alpha component (0xAA000000) is ignored.
+		Color tint applied to emitted particles. Value must not include the alpha channel.
 	**/
 	var tint : EmitterOp;
 	/**
@@ -516,6 +516,8 @@ package global.phaser.gameobjects.particles;
 	/**
 		Creates and returns a Bitmap Mask. This mask can be used by any Game Object,
 		including this one.
+		
+		Note: Bitmap Masks only work on WebGL. Geometry Masks work on both WebGL and Canvas.
 		
 		To create the mask you need to pass in a reference to a renderable Game Object.
 		A renderable Game Object is one that uses a texture to render with, such as an

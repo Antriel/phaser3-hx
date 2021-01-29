@@ -2,22 +2,22 @@ package global.phaser.types.gameobjects.graphics;
 
 typedef RoundedRectRadius = {
 	/**
-		Top left
+		Top left corner radius.
 	**/
 	@:optional
 	var tl : Float;
 	/**
-		Top right
+		Top right corner radius.
 	**/
 	@:optional
 	var tr : Float;
 	/**
-		Bottom right
+		Bottom right corner radius.
 	**/
 	@:optional
 	var br : Float;
 	/**
-		Bottom left
+		Bottom left corner radius.
 	**/
 	@:optional
 	var bl : Float;

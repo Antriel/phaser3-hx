@@ -35,11 +35,6 @@ package global.phaser.gameobjects;
 	**/
 	var canvas : js.html.CanvasElement;
 	/**
-		A reference to the GL Frame Buffer this Render Texture is drawing to.
-		This is only set if Phaser is running with the WebGL Renderer.
-	**/
-	var framebuffer : js.html.webgl.Framebuffer;
-	/**
 		Is this Render Texture dirty or not? If not it won't spend time clearing or filling itself.
 	**/
 	var dirty : Bool;
@@ -62,13 +57,13 @@ package global.phaser.gameobjects;
 	**/
 	var camera : global.phaser.cameras.scene2d.BaseCamera;
 	/**
-		A reference to the WebGL Rendering Context.
+		The Render Target that belongs to this Render Texture.
+		
+		A Render Target encapsulates a framebuffer and texture for the WebGL Renderer.
+		
+		This property remains `null` under Canvas.
 	**/
-	var gl : js.html.webgl.RenderingContext;
-	/**
-		A reference to the WebGLTexture that is being rendered to in a WebGL Context.
-	**/
-	final glTexture : js.html.webgl.Texture;
+	var renderTarget : global.phaser.renderer.webgl.RenderTarget;
 	/**
 		Sets the size of this Game Object.
 	**/
@@ -80,8 +75,10 @@ package global.phaser.gameobjects;
 		texture will not change.
 		
 		If Render Texture was not created from specific frame, the following will happen:
+		
 		In WebGL it will destroy and then re-create the frame buffer being used by the Render Texture.
 		In Canvas it will resize the underlying canvas element.
+		
 		Both approaches will erase everything currently drawn to the Render Texture.
 		
 		If the dimensions given are the same as those already being used, calling this method will do nothing.
@@ -118,6 +115,10 @@ package global.phaser.gameobjects;
 		By default it will create a single base texture. You can add frames to the texture
 		by using the `Texture.add` method. After doing this, you can then allow Game Objects
 		to use a specific frame from a Render Texture.
+		
+		If you destroy this Render Texture, any Game Object using it via the Texture Manager will
+		stop rendering. Ensure you remove the texture from the Texture Manager and any Game Objects
+		using it first, before destroying this Render Texture.
 	**/
 	function saveTexture(key:String):global.phaser.textures.Texture;
 	/**
@@ -135,7 +136,7 @@ package global.phaser.gameobjects;
 		It can accept any of the following:
 		
 		* Any renderable Game Object, such as a Sprite, Text, Graphics or TileSprite.
-		* Dynamic and Static Tilemap Layers.
+		* Tilemap Layers.
 		* A Group. The contents of which will be iterated and drawn in turn.
 		* A Container. The contents of which will be iterated fully, and drawn in turn.
 		* A Scene's Display List. Pass in `Scene.children` to draw the whole list.
@@ -173,7 +174,7 @@ package global.phaser.gameobjects;
 		It can accept any of the following:
 		
 		* Any renderable Game Object, such as a Sprite, Text, Graphics or TileSprite.
-		* Dynamic and Static Tilemap Layers.
+		* Tilemap Layers.
 		* A Group. The contents of which will be iterated and drawn in turn.
 		* A Container. The contents of which will be iterated fully, and drawn in turn.
 		* A Scene's Display List. Pass in `Scene.children` to draw the whole list.
@@ -228,6 +229,178 @@ package global.phaser.gameobjects;
 		If you need to draw a Sprite to this Render Texture, use the `draw` method instead.
 	**/
 	function drawFrame(key:String, ?frame:ts.AnyOf2<String, Float>, ?x:Float, ?y:Float, ?alpha:Float, ?tint:Float):RenderTexture;
+	/**
+		Use this method if you need to batch draw a large number of Game Objects to
+		this Render Texture in a single go, or on a frequent basis.
+		
+		This method starts the beginning of a batched draw.
+		
+		It is faster than calling `draw`, but you must be very careful to manage the
+		flow of code and remember to call `endDraw()`. If you don't need to draw large
+		numbers of objects it's much safer and easier to use the `draw` method instead.
+		
+		The flow should be:
+		
+		```javascript
+		// Call once:
+		RenderTexture.beginDraw();
+		
+		// repeat n times:
+		RenderTexture.batchDraw();
+		// or
+		RenderTexture.batchDrawFrame();
+		
+		// Call once:
+		RenderTexture.endDraw();
+		```
+		
+		Do not call any methods other than `batchDraw`, `batchDrawFrame`, or `endDraw` once you
+		have started a batch. Also, be very careful not to destroy this Render Texture while the
+		batch is still open, or call `beginDraw` again.
+	**/
+	function beginDraw():RenderTexture;
+	/**
+		Use this method if you have already called `beginDraw` and need to batch
+		draw a large number of objects to this Render Texture.
+		
+		This method batches the drawing of the given objects to this Render Texture,
+		without causing a bind or batch flush.
+		
+		It is faster than calling `draw`, but you must be very careful to manage the
+		flow of code and remember to call `endDraw()`. If you don't need to draw large
+		numbers of objects it's much safer and easier to use the `draw` method instead.
+		
+		The flow should be:
+		
+		```javascript
+		// Call once:
+		RenderTexture.beginDraw();
+		
+		// repeat n times:
+		RenderTexture.batchDraw();
+		// or
+		RenderTexture.batchDrawFrame();
+		
+		// Call once:
+		RenderTexture.endDraw();
+		```
+		
+		Do not call any methods other than `batchDraw`, `batchDrawFrame`, or `endDraw` once you
+		have started a batch. Also, be very careful not to destroy this Render Texture while the
+		batch is still open, or call `beginDraw` again.
+		
+		Draws the given object, or an array of objects, to this Render Texture.
+		
+		It can accept any of the following:
+		
+		* Any renderable Game Object, such as a Sprite, Text, Graphics or TileSprite.
+		* Tilemap Layers.
+		* A Group. The contents of which will be iterated and drawn in turn.
+		* A Container. The contents of which will be iterated fully, and drawn in turn.
+		* A Scene's Display List. Pass in `Scene.children` to draw the whole list.
+		* Another Render Texture.
+		* A Texture Frame instance.
+		* A string. This is used to look-up a texture from the Texture Manager.
+		
+		Note: You cannot draw a Render Texture to itself.
+		
+		If passing in a Group or Container it will only draw children that return `true`
+		when their `willRender()` method is called. I.e. a Container with 10 children,
+		5 of which have `visible=false` will only draw the 5 visible ones.
+		
+		If passing in an array of Game Objects it will draw them all, regardless if
+		they pass a `willRender` check or not.
+		
+		You can pass in a string in which case it will look for a texture in the Texture
+		Manager matching that string, and draw the base frame. If you need to specify
+		exactly which frame to draw then use the method `drawFrame` instead.
+		
+		You can pass in the `x` and `y` coordinates to draw the objects at. The use of
+		the coordinates differ based on what objects are being drawn. If the object is
+		a Group, Container or Display List, the coordinates are _added_ to the positions
+		of the children. For all other types of object, the coordinates are exact.
+		
+		The `alpha` and `tint` values are only used by Texture Frames.
+		Game Objects use their own alpha and tint values when being drawn.
+	**/
+	function batchDraw(entries:Dynamic, ?x:Float, ?y:Float, ?alpha:Float, ?tint:Float):RenderTexture;
+	/**
+		Use this method if you have already called `beginDraw` and need to batch
+		draw a large number of texture frames to this Render Texture.
+		
+		This method batches the drawing of the given frames to this Render Texture,
+		without causing a bind or batch flush.
+		
+		It is faster than calling `drawFrame`, but you must be very careful to manage the
+		flow of code and remember to call `endDraw()`. If you don't need to draw large
+		numbers of frames it's much safer and easier to use the `drawFrame` method instead.
+		
+		The flow should be:
+		
+		```javascript
+		// Call once:
+		RenderTexture.beginDraw();
+		
+		// repeat n times:
+		RenderTexture.batchDraw();
+		// or
+		RenderTexture.batchDrawFrame();
+		
+		// Call once:
+		RenderTexture.endDraw();
+		```
+		
+		Do not call any methods other than `batchDraw`, `batchDrawFrame`, or `endDraw` once you
+		have started a batch. Also, be very careful not to destroy this Render Texture while the
+		batch is still open, or call `beginDraw` again.
+		
+		Draws the Texture Frame to the Render Texture at the given position.
+		
+		Textures are referenced by their string-based keys, as stored in the Texture Manager.
+		
+		```javascript
+		var rt = this.add.renderTexture(0, 0, 800, 600);
+		rt.drawFrame(key, frame);
+		```
+		
+		You can optionally provide a position, alpha and tint value to apply to the frame
+		before it is drawn.
+		
+		Calling this method will cause a batch flush, so if you've got a stack of things to draw
+		in a tight loop, try using the `draw` method instead.
+		
+		If you need to draw a Sprite to this Render Texture, use the `draw` method instead.
+	**/
+	function batchDrawFrame(key:String, ?frame:ts.AnyOf2<String, Float>, ?x:Float, ?y:Float, ?alpha:Float, ?tint:Float):RenderTexture;
+	/**
+		Use this method to finish batch drawing to this Render Texture.
+		
+		Never call this method without first calling `beginDraw`.
+		
+		It is faster than calling `draw`, but you must be very careful to manage the
+		flow of code and remember to call `endDraw()`. If you don't need to draw large
+		numbers of objects it's much safer and easier to use the `draw` method instead.
+		
+		The flow should be:
+		
+		```javascript
+		// Call once:
+		RenderTexture.beginDraw();
+		
+		// repeat n times:
+		RenderTexture.batchDraw();
+		// or
+		RenderTexture.batchDrawFrame();
+		
+		// Call once:
+		RenderTexture.endDraw();
+		```
+		
+		Do not call any methods other than `batchDraw`, `batchDrawFrame`, or `endDraw` once you
+		have started a batch. Also, be very careful not to destroy this Render Texture while the
+		batch is still open, or call `beginDraw` again.
+	**/
+	function endDraw():RenderTexture;
 	/**
 		Takes a snapshot of the given area of this Render Texture.
 		
@@ -575,6 +748,8 @@ package global.phaser.gameobjects;
 		Creates and returns a Bitmap Mask. This mask can be used by any Game Object,
 		including this one.
 		
+		Note: Bitmap Masks only work on WebGL. Geometry Masks work on both WebGL and Canvas.
+		
 		To create the mask you need to pass in a reference to a renderable Game Object.
 		A renderable Game Object is one that uses a texture to render with, such as an
 		Image, Sprite, Render Texture or BitmapText.
@@ -644,6 +819,8 @@ package global.phaser.gameobjects;
 	function updateDisplayOrigin():RenderTexture;
 	/**
 		The initial WebGL pipeline of this Game Object.
+		
+		If you call `resetPipeline` on this Game Object, the pipeline is reset to this default.
 	**/
 	var defaultPipeline : global.phaser.renderer.webgl.WebGLPipeline;
 	/**
@@ -651,18 +828,84 @@ package global.phaser.gameobjects;
 	**/
 	var pipeline : global.phaser.renderer.webgl.WebGLPipeline;
 	/**
-		Sets the initial WebGL Pipeline of this Game Object.
-		This should only be called during the instantiation of the Game Object.
+		Does this Game Object have any Post Pipelines set?
 	**/
-	function initPipeline(?pipelineName:String):Bool;
+	var hasPostPipeline : Bool;
 	/**
-		Sets the active WebGL Pipeline of this Game Object.
+		The WebGL Post FX Pipelines this Game Object uses for post-render effects.
+		
+		The pipelines are processed in the order in which they appear in this array.
+		
+		If you modify this array directly, be sure to set the
+		`hasPostPipeline` property accordingly.
 	**/
-	function setPipeline(pipelineName:String):RenderTexture;
+	var postPipeline : Array<global.phaser.renderer.webgl.pipelines.PostFXPipeline>;
+	/**
+		An object to store pipeline specific data in, to be read by the pipelines this Game Object uses.
+	**/
+	var pipelineData : Dynamic;
+	/**
+		Sets the initial WebGL Pipeline of this Game Object.
+		
+		This should only be called during the instantiation of the Game Object. After that, use `setPipeline`.
+	**/
+	function initPipeline(pipeline:ts.AnyOf2<String, global.phaser.renderer.webgl.WebGLPipeline>):Bool;
+	/**
+		Sets the main WebGL Pipeline of this Game Object.
+		
+		Also sets the `pipelineData` property, if the parameter is given.
+		
+		Both the pipeline and post pipelines share the same pipeline data object.
+	**/
+	function setPipeline(pipeline:ts.AnyOf2<String, global.phaser.renderer.webgl.WebGLPipeline>, ?pipelineData:Dynamic, ?copyData:Bool):RenderTexture;
+	/**
+		Sets one, or more, Post Pipelines on this Game Object.
+		
+		Post Pipelines are invoked after this Game Object has rendered to its target and
+		are commonly used for post-fx.
+		
+		The post pipelines are appended to the `postPipelines` array belonging to this
+		Game Object. When the renderer processes this Game Object, it iterates through the post
+		pipelines in the order in which they appear in the array. If you are stacking together
+		multiple effects, be aware that the order is important.
+		
+		If you call this method multiple times, the new pipelines will be appended to any existing
+		post pipelines already set. Use the `resetPostPipeline` method to clear them first, if required.
+		
+		You can optionally also sets the `pipelineData` property, if the parameter is given.
+		
+		Both the pipeline and post pipelines share the pipeline data object together.
+	**/
+	function setPostPipeline(pipelines:ts.AnyOf6<String, haxe.Constraints.Function, Array<haxe.Constraints.Function>, Array<String>, global.phaser.renderer.webgl.pipelines.PostFXPipeline, Array<global.phaser.renderer.webgl.pipelines.PostFXPipeline>>, ?pipelineData:Dynamic, ?copyData:Bool):RenderTexture;
+	/**
+		Adds an entry to the `pipelineData` object belonging to this Game Object.
+		
+		If the 'key' already exists, its value is updated. If it doesn't exist, it is created.
+		
+		If `value` is undefined, and `key` exists, `key` is removed from the data object.
+		
+		Both the pipeline and post pipelines share the pipeline data object together.
+	**/
+	function setPipelineData(key:String, ?value:Dynamic):RenderTexture;
+	/**
+		Gets a Post Pipeline instance from this Game Object, based on the given name, and returns it.
+	**/
+	function getPostPipeline(pipeline:ts.AnyOf3<String, haxe.Constraints.Function, global.phaser.renderer.webgl.pipelines.PostFXPipeline>):ts.AnyOf2<global.phaser.renderer.webgl.pipelines.PostFXPipeline, Array<global.phaser.renderer.webgl.pipelines.PostFXPipeline>>;
 	/**
 		Resets the WebGL Pipeline of this Game Object back to the default it was created with.
 	**/
-	function resetPipeline():Bool;
+	function resetPipeline(?resetPostPipelines:Bool, ?resetData:Bool):Bool;
+	/**
+		Resets the WebGL Post Pipelines of this Game Object. It does this by calling
+		the `destroy` method on each post pipeline and then clearing the local array.
+	**/
+	function resetPostPipeline(?resetData:Bool):Void;
+	/**
+		Removes a type of Post Pipeline instances from this Game Object, based on the given name, and destroys them.
+		
+		If you wish to remove all Post Pipelines use the `resetPostPipeline` method instead.
+	**/
+	function removePostPipeline(pipeline:ts.AnyOf2<String, global.phaser.renderer.webgl.pipelines.PostFXPipeline>):RenderTexture;
 	/**
 		Gets the name of the WebGL Pipeline this Game Object is currently using.
 	**/
@@ -722,7 +965,34 @@ package global.phaser.gameobjects;
 	**/
 	function setScrollFactor(x:Float, ?y:Float):RenderTexture;
 	/**
-		Fill or additive?
+		The tint value being applied to the top-left vertice of the Game Object.
+		This value is interpolated from the corner to the center of the Game Object.
+		The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+	**/
+	var tintTopLeft : Float;
+	/**
+		The tint value being applied to the top-right vertice of the Game Object.
+		This value is interpolated from the corner to the center of the Game Object.
+		The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+	**/
+	var tintTopRight : Float;
+	/**
+		The tint value being applied to the bottom-left vertice of the Game Object.
+		This value is interpolated from the corner to the center of the Game Object.
+		The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+	**/
+	var tintBottomLeft : Float;
+	/**
+		The tint value being applied to the bottom-right vertice of the Game Object.
+		This value is interpolated from the corner to the center of the Game Object.
+		The value should be set as a hex number, i.e. 0xff0000 for red, or 0xff00ff for purple.
+	**/
+	var tintBottomRight : Float;
+	/**
+		The tint fill mode.
+		
+		`false` = An additive tint (the default), where vertices colors are blended with the texture.
+		`true` = A fill tint, where the vertices colors replace the texture, but respects texture alpha.
 	**/
 	var tintFill : Bool;
 	/**
@@ -768,32 +1038,15 @@ package global.phaser.gameobjects;
 	**/
 	function setTintFill(?topLeft:Float, ?topRight:Float, ?bottomLeft:Float, ?bottomRight:Float):RenderTexture;
 	/**
-		The tint value being applied to the top-left of the Game Object.
-		This value is interpolated from the corner to the center of the Game Object.
-	**/
-	var tintTopLeft : Float;
-	/**
-		The tint value being applied to the top-right of the Game Object.
-		This value is interpolated from the corner to the center of the Game Object.
-	**/
-	var tintTopRight : Float;
-	/**
-		The tint value being applied to the bottom-left of the Game Object.
-		This value is interpolated from the corner to the center of the Game Object.
-	**/
-	var tintBottomLeft : Float;
-	/**
-		The tint value being applied to the bottom-right of the Game Object.
-		This value is interpolated from the corner to the center of the Game Object.
-	**/
-	var tintBottomRight : Float;
-	/**
 		The tint value being applied to the whole of the Game Object.
 		This property is a setter-only. Use the properties `tintTopLeft` etc to read the current tint value.
 	**/
 	var tint : Float;
 	/**
-		Does this Game Object have a tint applied to it or not?
+		Does this Game Object have a tint applied?
+		
+		It checks to see if the 4 tint properties are set to the value 0xffffff
+		and that the `tintFill` property is `false`. This indicates that a Game Object isn't tinted.
 	**/
 	final isTinted : Bool;
 	/**
@@ -854,6 +1107,10 @@ package global.phaser.gameobjects;
 	**/
 	function setPosition(?x:Float, ?y:Float, ?z:Float, ?w:Float):RenderTexture;
 	/**
+		Copies an object's coordinates to this Game Object's position.
+	**/
+	function copyPosition(source:ts.AnyOf3<global.phaser.types.math.Vector2Like, global.phaser.types.math.Vector3Like, global.phaser.types.math.Vector4Like>):RenderTexture;
+	/**
 		Sets the position of this Game Object to be a random position within the confines of
 		the given area.
 		
@@ -902,6 +1159,17 @@ package global.phaser.gameobjects;
 		Gets the world transform matrix for this Game Object, factoring in any parent Containers.
 	**/
 	function getWorldTransformMatrix(?tempMatrix:global.phaser.gameobjects.components.TransformMatrix, ?parentMatrix:global.phaser.gameobjects.components.TransformMatrix):global.phaser.gameobjects.components.TransformMatrix;
+	/**
+		Takes the given `x` and `y` coordinates and converts them into local space for this
+		Game Object, taking into account parent and local transforms, and the Display Origin.
+		
+		The returned Vector2 contains the translated point in its properties.
+		
+		A Camera needs to be provided in order to handle modified scroll factors. If no
+		camera is specified, it will use the `main` camera from the Scene to which this
+		Game Object belongs.
+	**/
+	function getLocalPoint(x:Float, y:Float, ?point:global.phaser.math.Vector2, ?camera:global.phaser.cameras.scene2d.Camera):global.phaser.math.Vector2;
 	/**
 		Gets the sum total rotation of all of this Game Objects parent Containers.
 		
@@ -1020,7 +1288,7 @@ package global.phaser.gameobjects;
 		
 		You can also provide an Input Configuration Object as the only argument to this method.
 	**/
-	function setInteractive(?shape:Dynamic, ?callback:global.phaser.types.input.HitAreaCallback, ?dropZone:Bool):RenderTexture;
+	function setInteractive(?hitArea:Dynamic, ?callback:global.phaser.types.input.HitAreaCallback, ?dropZone:Bool):RenderTexture;
 	/**
 		If this Game Object has previously been enabled for input, this will disable it.
 		

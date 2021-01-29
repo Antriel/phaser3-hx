@@ -162,6 +162,21 @@ package global.phaser.sound;
 	**/
 	static final MUTE : Dynamic;
 	/**
+		The Sound Pan Event.
+		
+		This event is dispatched by both Web Audio and HTML5 Audio Sound objects when their pan changes.
+		
+		Listen to it from a Sound instance using `Sound.on('pan', listener)`, i.e.:
+		
+		```javascript
+		var sound = this.sound.add('key');
+		sound.on('pan', listener);
+		sound.play();
+		sound.setPan(0.5);
+		```
+	**/
+	static final PAN : Dynamic;
+	/**
 		The Pause All Sounds Event.
 		
 		This event is dispatched by the Base Sound Manager, or more typically, an instance of the Web Audio Sound Manager,

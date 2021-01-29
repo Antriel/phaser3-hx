@@ -12,7 +12,7 @@ package global.phaser.renderer.webgl;
 	static function getTintAppendFloatAlpha(rgb:Float, a:Float):Float;
 	/**
 		Packs a Uint24, representing RGB components, with a Float32, representing
-		the alpha component, with a range between 0.0 and 1.0 and return a 
+		the alpha component, with a range between 0.0 and 1.0 and return a
 		swizzled Uint32
 	**/
 	static function getTintAppendFloatAlphaAndSwap(rgb:Float, a:Float):Float;
@@ -21,7 +21,13 @@ package global.phaser.renderer.webgl;
 	**/
 	static function getFloatsFromUintRGB(rgb:Float):Array<Dynamic>;
 	/**
-		Counts how many attributes of 32 bits a vertex has
+		Check to see how many texture units the GPU supports, based on the given config value.
+		Then tests this against the maximum number of iterations GLSL can support.
 	**/
-	static function getComponentCount(attributes:Array<Dynamic>, glContext:js.html.webgl.RenderingContext):Float;
+	static function checkShaderMax(gl:js.html.webgl.RenderingContext, maxTextures:Float):Float;
+	/**
+		Checks the given Fragment Shader Source for `%count%` and `%forloop%` declarations and
+		replaces those with GLSL code for setting `texture = texture2D(uMainSampler[i], outTexCoord)`.
+	**/
+	static function parseFragmentShaderMaxTextures(fragmentShaderSource:String, maxTextures:Float):String;
 }

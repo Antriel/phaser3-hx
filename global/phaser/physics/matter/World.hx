@@ -205,7 +205,7 @@ package global.phaser.physics.matter;
 		
 		Set the appropriate tiles in your layer to collide before calling this method!
 	**/
-	function convertTilemapLayer(tilemapLayer:ts.AnyOf2<global.phaser.tilemaps.DynamicTilemapLayer, global.phaser.tilemaps.StaticTilemapLayer>, ?options:Dynamic):World;
+	function convertTilemapLayer(tilemapLayer:global.phaser.tilemaps.TilemapLayer, ?options:Dynamic):World;
 	/**
 		Adds `MatterTileBody` instances for the given tiles. This adds bodies regardless of whether the
 		tiles are set to collide or not.

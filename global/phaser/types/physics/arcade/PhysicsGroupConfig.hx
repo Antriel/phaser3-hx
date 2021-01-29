@@ -82,6 +82,16 @@ typedef PhysicsGroupConfig = global.phaser.types.gameobjects.group.GroupConfig &
 	@:optional
 	var frictionY : Float;
 	/**
+		Sets {@link Phaser.Physics.Arcade.Body#maxVelocity maxVelocity.x}.
+	**/
+	@:optional
+	var maxVelocityX : Float;
+	/**
+		Sets {@link Phaser.Physics.Arcade.Body#maxVelocity maxVelocity.y}.
+	**/
+	@:optional
+	var maxVelocityY : Float;
+	/**
 		Sets {@link Phaser.Physics.Arcade.Body#velocity velocity.x}.
 	**/
 	@:optional

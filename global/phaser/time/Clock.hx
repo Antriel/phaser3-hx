@@ -33,8 +33,13 @@ package global.phaser.time;
 	var paused : Bool;
 	/**
 		Creates a Timer Event and adds it to the Clock at the start of the frame.
+		
+		You can also pass in an existing Timer Event, which will be reset and added to this Clock.
+		
+		Note that if the Timer Event is being used by _another_ Clock (in another Scene) it will still
+		be updated by that Clock as well, so be careful when using this feature.
 	**/
-	function addEvent(config:global.phaser.types.time.TimerEventConfig):TimerEvent;
+	function addEvent(config:ts.AnyOf2<global.phaser.types.time.TimerEventConfig, TimerEvent>):TimerEvent;
 	/**
 		Creates a Timer Event and adds it to the Clock at the start of the frame.
 		
@@ -45,6 +50,13 @@ package global.phaser.time;
 		Clears and recreates the array of pending Timer Events.
 	**/
 	function clearPendingEvents():Clock;
+	/**
+		Removes the given Timer Event, or an array of Timer Events, from this Clock.
+		
+		The events are removed from all internal lists (active, pending and removal),
+		freeing the event up to be re-used.
+	**/
+	function removeEvent(events:ts.AnyOf2<TimerEvent, Array<TimerEvent>>):Clock;
 	/**
 		Schedules all active Timer Events for removal at the start of the frame.
 	**/

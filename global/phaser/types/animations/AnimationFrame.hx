@@ -2,12 +2,14 @@ package global.phaser.types.animations;
 
 typedef AnimationFrame = {
 	/**
-		The key that the animation will be associated with. i.e. sprite.animations.play(key)
+		The key of the texture within the Texture Manager to use for this Animation Frame.
 	**/
+	@:optional
 	var key : String;
 	/**
-		The key, or index number, of the frame within the animation.
+		The key, or index number, of the frame within the texture to use for this Animation Frame.
 	**/
+	@:optional
 	var frame : ts.AnyOf2<String, Float>;
 	/**
 		The duration, in ms, of this frame of the animation.

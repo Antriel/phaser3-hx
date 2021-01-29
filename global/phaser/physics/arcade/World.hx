@@ -309,7 +309,7 @@ package global.phaser.physics.arcade;
 		
 		This is called automatically by your Scene and does not need to be invoked directly.
 	**/
-	private function update(time:Float, delta:Float):Void;
+	function update(time:Float, delta:Float):Void;
 	/**
 		Advances the simulation by a time increment.
 	**/
@@ -407,7 +407,7 @@ package global.phaser.physics.arcade;
 		Internal handler for Sprite vs. Tilemap collisions.
 		Please use Phaser.Physics.Arcade.World#collide instead.
 	**/
-	function collideSpriteVsTilemapLayer(sprite:global.phaser.gameobjects.GameObject, tilemapLayer:ts.AnyOf2<global.phaser.tilemaps.DynamicTilemapLayer, global.phaser.tilemaps.StaticTilemapLayer>, ?collideCallback:global.ArcadePhysicsCallback, ?processCallback:global.ArcadePhysicsCallback, ?callbackContext:Dynamic, ?overlapOnly:Bool):Bool;
+	function collideSpriteVsTilemapLayer(sprite:global.phaser.gameobjects.GameObject, tilemapLayer:global.phaser.tilemaps.TilemapLayer, ?collideCallback:global.ArcadePhysicsCallback, ?processCallback:global.ArcadePhysicsCallback, ?callbackContext:Dynamic, ?overlapOnly:Bool):Bool;
 	/**
 		Wrap an object's coordinates (or several objects' coordinates) within {@link Phaser.Physics.Arcade.World#bounds}.
 		

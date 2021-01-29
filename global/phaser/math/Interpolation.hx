@@ -24,11 +24,11 @@ package global.phaser.math;
 	**/
 	static function QuadraticBezier(t:Float, p0:Float, p1:Float, p2:Float):Float;
 	/**
-		A Smoother Step interpolation method.
-	**/
-	static function SmootherStep(t:Float, min:Float, max:Float):Float;
-	/**
 		A Smooth Step interpolation method.
 	**/
 	static function SmoothStep(t:Float, min:Float, max:Float):Float;
+	/**
+		A Smoother Step interpolation method.
+	**/
+	static function SmootherStep(t:Float, min:Float, max:Float):Float;
 }

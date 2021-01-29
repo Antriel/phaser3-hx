@@ -8,25 +8,13 @@ package global.phaser.gameobjects;
 @:native("Phaser.GameObjects.LightsManager") extern class LightsManager {
 	function new();
 	/**
-		The pool of Lights.
-		
-		Used to recycle removed Lights for a more efficient use of memory.
-	**/
-	var lightPool : Array<Light>;
-	/**
 		The Lights in the Scene.
 	**/
 	var lights : Array<Light>;
 	/**
-		Lights that have been culled from a Camera's viewport.
-		
-		Lights in this list will not be rendered.
-	**/
-	var culledLights : Array<Light>;
-	/**
 		The ambient color.
 	**/
-	var ambientColor : Dynamic;
+	var ambientColor : global.phaser.display.RGB;
 	/**
 		Whether the Lights Manager is enabled.
 	**/
@@ -37,6 +25,10 @@ package global.phaser.gameobjects;
 	**/
 	final maxLights : Float;
 	/**
+		The number of lights that the LightPipeline processed in the _previous_ frame.
+	**/
+	final visibleLights : Float;
+	/**
 		Enable the Lights Manager.
 	**/
 	function enable():LightsManager;
@@ -45,15 +37,14 @@ package global.phaser.gameobjects;
 	**/
 	function disable():LightsManager;
 	/**
-		Cull any Lights that aren't visible to the given Camera.
+		Get all lights that can be seen by the given Camera.
 		
-		Culling Lights improves performance by ensuring that only Lights within a Camera's viewport are rendered.
+		It will automatically cull lights that are outside the world view of the Camera.
+		
+		If more lights are returned than supported by the pipeline, the lights are then culled
+		based on the distance from the center of the camera. Only those closest are rendered.
 	**/
-	function cull(camera:global.phaser.cameras.scene2d.Camera):Array<Light>;
-	/**
-		Iterate over each Light with a callback.
-	**/
-	function forEachLight(callback:global.LightForEach):LightsManager;
+	function getLights(camera:global.phaser.cameras.scene2d.Camera):Array<Light>;
 	/**
 		Set the ambient light color.
 	**/

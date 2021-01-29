@@ -148,6 +148,13 @@ package global.phaser.textures;
 	**/
 	function updateCropUVs(crop:Dynamic, flipX:Bool, flipY:Bool):Dynamic;
 	/**
+		Directly sets the canvas and WebGL UV data for this frame.
+		
+		Use this if you need to override the values that are generated automatically
+		when the Frame is created.
+	**/
+	function setUVs(width:Float, height:Float, u0:Float, v0:Float, u1:Float, v1:Float):Frame;
+	/**
 		Updates the internal WebGL UV cache and the drawImage cache.
 	**/
 	function updateUVs():Frame;

@@ -114,6 +114,18 @@ package global.phaser.physics.arcade;
 	**/
 	var immovable : Bool;
 	/**
+		Sets if this Body can be pushed by another Body.
+		
+		A body that cannot be pushed will reflect back all of the velocity it is given to the
+		colliding body. If that body is also not pushable, then the separation will be split
+		between them evenly.
+		
+		If you want your body to never move or seperate at all, see the `setImmovable` method.
+		
+		By default, Static Bodies are not pushable.
+	**/
+	var pushable : Bool;
+	/**
 		A flag disabling the default horizontal separation of colliding bodies. Pass your own `collideHandler` to the collider.
 	**/
 	var customSeparateX : Bool;
@@ -147,15 +159,19 @@ package global.phaser.physics.arcade;
 	**/
 	var checkCollision : global.phaser.types.physics.arcade.ArcadeBodyCollision;
 	/**
-		Whether this StaticBody has ever collided with another body and in which direction.
+		This property is kept for compatibility with Dynamic Bodies.
+		Avoid using it.
 	**/
 	var touching : global.phaser.types.physics.arcade.ArcadeBodyCollision;
 	/**
-		Whether this StaticBody was colliding with another body during the last step or any previous step, and in which direction.
+		This property is kept for compatibility with Dynamic Bodies.
+		Avoid using it.
+		The values are always false for a Static Body.
 	**/
 	var wasTouching : global.phaser.types.physics.arcade.ArcadeBodyCollision;
 	/**
-		Whether this StaticBody has ever collided with a tile or the world boundary.
+		This property is kept for compatibility with Dynamic Bodies.
+		Avoid using it.
 	**/
 	var blocked : global.phaser.types.physics.arcade.ArcadeBodyCollision;
 	/**

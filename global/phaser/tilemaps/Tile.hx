@@ -33,12 +33,24 @@ package global.phaser.tilemaps;
 	**/
 	var height : Float;
 	/**
-		The map's base width of a tile in pixels. Tiled maps support multiple tileset sizes
+		The right of the tile in pixels.
+		
+		Set in the `updatePixelXY` method.
+	**/
+	var right : Float;
+	/**
+		The bottom of the tile in pixels.
+		
+		Set in the `updatePixelXY` method.
+	**/
+	var bottom : Float;
+	/**
+		The maps base width of a tile in pixels. Tiled maps support multiple tileset sizes
 		within one map, but they are still placed at intervals of the base tile size.
 	**/
 	var baseWidth : Float;
 	/**
-		The map's base height of a tile in pixels. Tiled maps support multiple tileset sizes
+		The maps base height of a tile in pixels. Tiled maps support multiple tileset sizes
 		within one map, but they are still placed at intervals of the base tile size.
 	**/
 	var baseHeight : Float;
@@ -64,34 +76,46 @@ package global.phaser.tilemaps;
 	var rotation : Float;
 	/**
 		Whether the tile should collide with any object on the left side.
+		
+		This property is used by Arcade Physics only, however, you can also use it
+		in your own checks.
 	**/
 	var collideLeft : Bool;
 	/**
 		Whether the tile should collide with any object on the right side.
+		
+		This property is used by Arcade Physics only, however, you can also use it
+		in your own checks.
 	**/
 	var collideRight : Bool;
 	/**
 		Whether the tile should collide with any object on the top side.
+		
+		This property is used by Arcade Physics only, however, you can also use it
+		in your own checks.
 	**/
 	var collideUp : Bool;
 	/**
 		Whether the tile should collide with any object on the bottom side.
+		
+		This property is used by Arcade Physics only, however, you can also use it
+		in your own checks.
 	**/
 	var collideDown : Bool;
 	/**
-		Whether the tile's left edge is interesting for collisions.
+		Whether the tiles left edge is interesting for collisions.
 	**/
 	var faceLeft : Bool;
 	/**
-		Whether the tile's right edge is interesting for collisions.
+		Whether the tiles right edge is interesting for collisions.
 	**/
 	var faceRight : Bool;
 	/**
-		Whether the tile's top edge is interesting for collisions.
+		Whether the tiles top edge is interesting for collisions.
 	**/
 	var faceTop : Bool;
 	/**
-		Whether the tile's bottom edge is interesting for collisions.
+		Whether the tiles bottom edge is interesting for collisions.
 	**/
 	var faceBottom : Bool;
 	/**
@@ -170,10 +194,6 @@ package global.phaser.tilemaps;
 	**/
 	function getCenterY(?camera:global.phaser.cameras.scene2d.Camera):Float;
 	/**
-		Clean up memory.
-	**/
-	function destroy():Void;
-	/**
 		Check for intersection with this tile. This does not factor in camera scroll, layer scale or
 		layer position.
 	**/
@@ -204,9 +224,13 @@ package global.phaser.tilemaps;
 	**/
 	function setSize(tileWidth:Float, tileHeight:Float, baseWidth:Float, baseHeight:Float):Tile;
 	/**
-		Used internally. Updates the tile's world XY position based on the current tile size.
+		Used internally. Updates the tiles world XY position based on the current tile size.
 	**/
 	function updatePixelXY():Tile;
+	/**
+		Clean up memory.
+	**/
+	function destroy():Void;
 	/**
 		True if this tile can collide on any of its faces or has a collision callback set.
 	**/
@@ -221,19 +245,18 @@ package global.phaser.tilemaps;
 	final hasInterestingFace : Bool;
 	/**
 		The tileset that contains this Tile. This is null if accessed from a LayerData instance
-		before the tile is placed in a StaticTilemapLayer or DynamicTilemapLayer, or if the tile has
-		an index that doesn't correspond to any of the map's tilesets.
+		before the tile is placed in a TilemapLayer, or if the tile has an index that doesn't correspond
+		to any of the maps tilesets.
 	**/
 	final tileset : Tileset;
 	/**
 		The tilemap layer that contains this Tile. This will only return null if accessed from a
-		LayerData instance before the tile is placed within a StaticTilemapLayer or
-		DynamicTilemapLayer.
+		LayerData instance before the tile is placed within a TilemapLayer.
 	**/
-	final tilemapLayer : ts.AnyOf2<DynamicTilemapLayer, StaticTilemapLayer>;
+	final tilemapLayer : TilemapLayer;
 	/**
 		The tilemap that contains this Tile. This will only return null if accessed from a LayerData
-		instance before the tile is placed within a StaticTilemapLayer or DynamicTilemapLayer.
+		instance before the tile is placed within a TilemapLayer.
 	**/
 	final tilemap : Tilemap;
 	/**

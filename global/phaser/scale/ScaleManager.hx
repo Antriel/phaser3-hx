@@ -133,7 +133,7 @@ package global.phaser.scale;
 	/**
 		The Base Size component.
 		
-		The modified game size, which is the gameSize * resolution, used to set the canvas width and height
+		The modified game size, which is the auto-rounded gameSize, used to set the canvas width and height
 		(but not the CSS style)
 	**/
 	var baseSize : global.phaser.structs.Size;
@@ -147,12 +147,6 @@ package global.phaser.scale;
 		The game scale mode.
 	**/
 	var scaleMode : ScaleModes;
-	/**
-		The canvas resolution.
-		
-		This is hard-coded to a value of 1 in the 3.16 release of Phaser and will be enabled at a later date.
-	**/
-	var resolution : Float;
 	/**
 		The game zoom factor.
 		
@@ -347,7 +341,7 @@ package global.phaser.scale;
 		
 		If the browser does not support this, a `FULLSCREEN_UNSUPPORTED` event will be emitted.
 		
-		This method _must_ be called from a user-input gesture, such as `pointerup`. You cannot launch
+		This method _must_ be called from a `pointerup` user-input gesture (**not** `pointerdown`). You cannot launch
 		games fullscreen without this, as most browsers block it. Games within an iframe will also be blocked
 		from fullscreen unless the iframe has the `allowfullscreen` attribute.
 		
@@ -397,7 +391,7 @@ package global.phaser.scale;
 	/**
 		Triggered when a fullscreenchange event is dispatched by the DOM.
 	**/
-	function onFullScreenChange():Void;
+	private function onFullScreenChange():Void;
 	/**
 		Triggered when a fullscreenerror event is dispatched by the DOM.
 	**/

@@ -2,6 +2,14 @@ package global.phaser.gameobjects;
 
 @:native("Phaser.GameObjects.Events") @valueModuleOnly extern class Events {
 	/**
+		The Game Object Added to Scene Event.
+		
+		This event is dispatched when a Game Object is added to a Scene.
+		
+		Listen for it on a Game Object instance using `GameObject.on('addedtoscene', listener)`.
+	**/
+	static final ADDED_TO_SCENE : Dynamic;
+	/**
 		The Game Object Destroy Event.
 		
 		This event is dispatched when a Game Object instance is being destroyed.
@@ -9,6 +17,14 @@ package global.phaser.gameobjects;
 		Listen for it on a Game Object instance using `GameObject.on('destroy', listener)`.
 	**/
 	static final DESTROY : Dynamic;
+	/**
+		The Game Object Removed from Scene Event.
+		
+		This event is dispatched when a Game Object is removed from a Scene.
+		
+		Listen for it on a Game Object instance using `GameObject.on('removedfromscene', listener)`.
+	**/
+	static final REMOVED_FROM_SCENE : Dynamic;
 	/**
 		The Video Game Object Complete Event.
 		

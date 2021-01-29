@@ -28,14 +28,16 @@ package global.phaser.input;
 	capture settings and more.
 	
 	Please also see the Input examples and tutorials for further information.
+	
+	**Incorrect input coordinates with Angular**
+	
+	If you are using Phaser within Angular, and use nglf or the router, to make the component in which the Phaser game resides
+	change state (i.e. appear or disappear) then you'll need to notify the Scale Manager about this, as Angular will mess with
+	the DOM in a way in which Phaser can't detect directly. Call `this.scale.updateBounds()` as part of your game init in order
+	to refresh the canvas DOM bounds values, which Phaser uses for input point position calculations.
 **/
 @:native("Phaser.Input.InputPlugin") extern class InputPlugin extends global.phaser.events.EventEmitter {
 	function new(scene:global.phaser.Scene);
-	/**
-		An instance of the Gamepad Plugin class, if enabled via the `input.gamepad` Scene or Game Config property.
-		Use this to create access Gamepads connected to the browser and respond to gamepad buttons.
-	**/
-	var gamepad : global.phaser.input.gamepad.GamepadPlugin;
 	/**
 		A reference to the Scene that this Input Plugin is responsible for.
 	**/
@@ -147,7 +149,7 @@ package global.phaser.input;
 		
 		You can also provide an Input Configuration Object as the only argument to this method.
 	**/
-	function enable(gameObject:global.phaser.gameobjects.GameObject, ?shape:Dynamic, ?callback:global.phaser.types.input.HitAreaCallback, ?dropZone:Bool):InputPlugin;
+	function enable(gameObject:global.phaser.gameobjects.GameObject, ?hitArea:Dynamic, ?hitAreaCallback:global.phaser.types.input.HitAreaCallback, ?dropZone:Bool):InputPlugin;
 	/**
 		Takes the given Pointer and performs a hit test against it, to see which interactive Game Objects
 		it is currently above.
@@ -230,7 +232,7 @@ package global.phaser.input;
 		those values fall within the area of the shape or not. All of the Phaser geometry objects provide this,
 		such as `Phaser.Geom.Rectangle.Contains`.
 	**/
-	function setHitArea(gameObjects:ts.AnyOf2<global.phaser.gameobjects.GameObject, Array<global.phaser.gameobjects.GameObject>>, ?shape:Dynamic, ?callback:global.phaser.types.input.HitAreaCallback):InputPlugin;
+	function setHitArea(gameObjects:ts.AnyOf2<global.phaser.gameobjects.GameObject, Array<global.phaser.gameobjects.GameObject>>, ?hitArea:Dynamic, ?hitAreaCallback:global.phaser.types.input.HitAreaCallback):InputPlugin;
 	/**
 		Sets the hit area for an array of Game Objects to be a `Phaser.Geom.Circle` shape, using
 		the given coordinates and radius to control its position and size.
@@ -325,10 +327,15 @@ package global.phaser.input;
 	**/
 	function setTopOnly(value:Bool):InputPlugin;
 	/**
-		Given an array of Game Objects, sort the array and return it, so that the objects are in depth index order
-		with the lowest at the bottom.
+		Given an array of Game Objects and a Pointer, sort the array and return it,
+		so that the objects are in render order with the lowest at the bottom.
 	**/
-	function sortGameObjects(gameObjects:Array<global.phaser.gameobjects.GameObject>):Array<global.phaser.gameobjects.GameObject>;
+	function sortGameObjects(gameObjects:Array<global.phaser.gameobjects.GameObject>, pointer:Pointer):Array<global.phaser.gameobjects.GameObject>;
+	/**
+		Given an array of Drop Zone Game Objects, sort the array and return it,
+		so that the objects are in depth index order with the lowest at the bottom.
+	**/
+	function sortDropZones(gameObjects:Array<global.phaser.gameobjects.GameObject>):Array<global.phaser.gameobjects.GameObject>;
 	/**
 		This method should be called from within an input event handler, such as `pointerdown`.
 		
@@ -443,6 +450,11 @@ package global.phaser.input;
 		This will be `undefined` by default unless you add a new Pointer using `addPointer`.
 	**/
 	final pointer10 : Pointer;
+	/**
+		An instance of the Gamepad Plugin class, if enabled via the `input.gamepad` Scene or Game Config property.
+		Use this to create access Gamepads connected to the browser and respond to gamepad buttons.
+	**/
+	var gamepad : global.phaser.input.gamepad.GamepadPlugin;
 	/**
 		An instance of the Keyboard Plugin class, if enabled via the `input.keyboard` Scene or Game Config property.
 		Use this to create Key objects and listen for keyboard specific events.

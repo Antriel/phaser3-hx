@@ -3,13 +3,18 @@ package global.phaser.animations;
 /**
 	A Frame based Animation.
 	
-	This consists of a key, some default values (like the frame rate) and a bunch of Frame objects.
+	Animations in Phaser consist of a sequence of `AnimationFrame` objects, which are managed by
+	this class, along with properties that impact playback, such as the animations frame rate
+	or delay.
 	
-	The Animation Manager creates these. Game Objects don't own an instance of these directly.
-	Game Objects have the Animation Component, which are like playheads to global Animations (these objects)
-	So multiple Game Objects can have playheads all pointing to this one Animation instance.
+	This class contains all of the properties and methods needed to handle playback of the animation
+	directly to an `AnimationState` instance, which is owned by a Sprite, or similar Game Object.
+	
+	You don't typically create an instance of this class directly, but instead go via
+	either the `AnimationManager` or the `AnimationState` and use their `create` methods,
+	depending on if you need a global animation, or local to a specific Sprite.
 **/
-@:native("Phaser.Animations.Animation") extern class Animation extends global.phaser.events.EventEmitter {
+@:native("Phaser.Animations.Animation") extern class Animation {
 	function new(manager:AnimationManager, key:String, config:global.phaser.types.animations.Animation);
 	/**
 		A reference to the global Animation Manager.
@@ -74,6 +79,14 @@ package global.phaser.animations;
 	**/
 	var paused : Bool;
 	/**
+		Gets the total number of frames in this animation.
+	**/
+	function getTotalFrames():Float;
+	/**
+		Calculates the duration, frame rate and msPerFrame values.
+	**/
+	function calculateDuration(target:Animation, totalFrames:Float, duration:Float, frameRate:Float):Void;
+	/**
 		Add frames to the end of the animation.
 	**/
 	function addFrame(config:ts.AnyOf2<String, Array<global.phaser.types.animations.AnimationFrame>>):Animation;
@@ -86,15 +99,10 @@ package global.phaser.animations;
 	**/
 	function checkFrame(index:Float):Bool;
 	/**
-		Called internally when this Animation completes playback.
-		Optionally, hides the parent Game Object, then stops playback.
-	**/
-	private function completeAnimation(component:global.phaser.gameobjects.components.Animation):Void;
-	/**
 		Called internally when this Animation first starts to play.
 		Sets the accumulator and nextTick properties.
 	**/
-	private function getFirstTick(component:global.phaser.gameobjects.components.Animation, ?includeDelay:Bool):Void;
+	private function getFirstTick(state:AnimationState):Void;
 	/**
 		Returns the AnimationFrame at the provided index
 	**/
@@ -106,7 +114,7 @@ package global.phaser.animations;
 	/**
 		Called internally. Sets the accumulator and nextTick values of the current Animation.
 	**/
-	function getNextTick(component:global.phaser.gameobjects.components.Animation):Void;
+	function getNextTick(state:AnimationState):Void;
 	/**
 		Returns the frame closest to the given progress value between 0 and 1.
 	**/
@@ -114,7 +122,7 @@ package global.phaser.animations;
 	/**
 		Advance the animation frame.
 	**/
-	function nextFrame(component:global.phaser.gameobjects.components.Animation):Void;
+	function nextFrame(state:AnimationState):Void;
 	/**
 		Returns the animation last frame.
 	**/
@@ -123,7 +131,7 @@ package global.phaser.animations;
 		Called internally when the Animation is playing backwards.
 		Sets the previous frame, causing a yoyo, repeat, complete or update, accordingly.
 	**/
-	function previousFrame(component:global.phaser.gameobjects.components.Animation):Void;
+	function previousFrame(state:AnimationState):Void;
 	/**
 		Removes the given AnimationFrame from this Animation instance.
 		This is a global action. Any Game Object using this Animation will be impacted by this change.
@@ -138,11 +146,7 @@ package global.phaser.animations;
 		Called internally during playback. Forces the animation to repeat, providing there are enough counts left
 		in the repeat counter.
 	**/
-	function repeatAnimation(component:global.phaser.gameobjects.components.Animation):Void;
-	/**
-		Sets the texture frame the animation uses for rendering.
-	**/
-	function setFrame(component:global.phaser.gameobjects.components.Animation):Void;
+	function repeatAnimation(state:AnimationState):Void;
 	/**
 		Converts the animation data to JSON.
 	**/
@@ -160,28 +164,10 @@ package global.phaser.animations;
 	**/
 	function resume():Animation;
 	/**
-		Add a listener for a given event.
+		Destroys this Animation instance. It will remove all event listeners,
+		remove this animation and its key from the global Animation Manager,
+		and then destroy all Animation Frames in turn.
 	**/
-	function on(event:ts.AnyOf2<String, js.lib.Symbol>, fn:haxe.Constraints.Function, ?context:Dynamic):Animation;
-	/**
-		Add a listener for a given event.
-	**/
-	function addListener(event:ts.AnyOf2<String, js.lib.Symbol>, fn:haxe.Constraints.Function, ?context:Dynamic):Animation;
-	/**
-		Add a one-time listener for a given event.
-	**/
-	function once(event:ts.AnyOf2<String, js.lib.Symbol>, fn:haxe.Constraints.Function, ?context:Dynamic):Animation;
-	/**
-		Remove the listeners of a given event.
-	**/
-	function removeListener(event:ts.AnyOf2<String, js.lib.Symbol>, ?fn:haxe.Constraints.Function, ?context:Dynamic, ?once:Bool):Animation;
-	/**
-		Remove the listeners of a given event.
-	**/
-	function off(event:ts.AnyOf2<String, js.lib.Symbol>, ?fn:haxe.Constraints.Function, ?context:Dynamic, ?once:Bool):Animation;
-	/**
-		Remove all listeners, or those of the specified event.
-	**/
-	function removeAllListeners(?event:ts.AnyOf2<String, js.lib.Symbol>):Animation;
+	function destroy():Void;
 	static var prototype : Animation;
 }

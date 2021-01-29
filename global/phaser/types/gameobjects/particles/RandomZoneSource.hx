@@ -4,5 +4,5 @@ typedef RandomZoneSource = {
 	/**
 		A function modifying its point argument.
 	**/
-	dynamic function getRandomPoint(point:global.phaser.math.Vector2):Void;
+	dynamic function getRandomPoint(point:global.phaser.types.math.Vector2Like):Void;
 };

@@ -17,11 +17,6 @@ typedef GameConfig = {
 	@:optional
 	var zoom : Float;
 	/**
-		The size of each game pixel, in canvas pixels. Values larger than 1 are "high" resolution.
-	**/
-	@:optional
-	var resolution : Float;
-	/**
 		Which renderer to use. Phaser.AUTO, Phaser.CANVAS, Phaser.HEADLESS, or Phaser.WEBGL. AUTO picks WEBGL if available, otherwise CANVAS.
 	**/
 	@:optional
@@ -156,4 +151,9 @@ typedef GameConfig = {
 	**/
 	@:optional
 	var audio : AudioConfig;
+	/**
+		A WebGL Pipeline configuration object. Can also be part of the `RenderConfig`.
+	**/
+	@:optional
+	var pipeline : PipelineConfig;
 };

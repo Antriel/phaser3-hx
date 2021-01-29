@@ -22,6 +22,10 @@ package global.phaser.gameobjects;
 	**/
 	var systems : global.phaser.scenes.Systems;
 	/**
+		The Scene's Event Emitter.
+	**/
+	var events : global.phaser.events.EventEmitter;
+	/**
 		Force a sort of the display list on the next call to depthSort.
 	**/
 	function queueDepthSort():Void;

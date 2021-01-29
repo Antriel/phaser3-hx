@@ -24,10 +24,56 @@ package global.phaser.geom;
 	**/
 	static function GetLineToCircle(line:Line, circle:Circle, ?out:Array<Dynamic>):Array<Dynamic>;
 	/**
+		Checks for intersection between the two line segments and returns the intersection point as a Vector3,
+		or `null` if the lines are parallel, or do not intersect.
+		
+		The `z` property of the Vector3 contains the intersection distance, which can be used to find
+		the closest intersecting point from a group of line segments.
+	**/
+	static function GetLineToLine(line1:Line, line2:Line, ?out:global.phaser.math.Vector3):global.phaser.math.Vector3;
+	/**
+		Checks for the closest point of intersection between a line segment and an array of points, where each pair
+		of points are converted to line segments for the intersection tests.
+		
+		If no intersection is found, this function returns `null`.
+		
+		If intersection was found, a Vector3 is returned with the following properties:
+		
+		The `x` and `y` components contain the point of the intersection.
+		The `z` component contains the closest distance.
+	**/
+	static function GetLineToPoints(line:Line, points:ts.AnyOf2<Array<Point>, Array<global.phaser.math.Vector2>>, ?out:global.phaser.math.Vector3):global.phaser.math.Vector3;
+	/**
+		Checks for the closest point of intersection between a line segment and an array of polygons.
+		
+		If no intersection is found, this function returns `null`.
+		
+		If intersection was found, a Vector4 is returned with the following properties:
+		
+		The `x` and `y` components contain the point of the intersection.
+		The `z` component contains the closest distance.
+		The `w` component contains the index of the polygon, in the given array, that triggered the intersection.
+	**/
+	static function GetLineToPolygon(line:Line, polygons:ts.AnyOf2<Polygon, Array<Polygon>>, ?out:global.phaser.math.Vector4):global.phaser.math.Vector4;
+	/**
 		Checks for intersection between the Line and a Rectangle shape,
 		and returns the intersection points as a Point object array.
 	**/
 	static function GetLineToRectangle(line:Line, rect:ts.AnyOf2<Dynamic, Rectangle>, ?out:Array<Dynamic>):Array<Dynamic>;
+	/**
+		Projects rays out from the given point to each line segment of the polygons.
+		
+		If the rays intersect with the polygons, the points of intersection are returned in an array.
+		
+		If no intersections are found, the returned array will be empty.
+		
+		Each Vector4 intersection result has the following properties:
+		
+		The `x` and `y` components contain the point of the intersection.
+		The `z` component contains the angle of intersection.
+		The `w` component contains the index of the polygon, in the given array, that triggered the intersection.
+	**/
+	static function GetRaysFromPointToPolygon(x:Float, y:Float, polygons:ts.AnyOf2<Polygon, Array<Polygon>>):Array<global.phaser.math.Vector4>;
 	/**
 		Checks if two Rectangle shapes intersect and returns the area of this intersection as Rectangle object.
 		

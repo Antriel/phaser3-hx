@@ -7,10 +7,15 @@ typedef Animation = {
 	@:optional
 	var key : String;
 	/**
-		An object containing data used to generate the frames for the animation
+		Either a string, in which case it will use all frames from a texture with the matching key, or an array of Animation Frame configuration objects.
 	**/
 	@:optional
-	var frames : Array<AnimationFrame>;
+	var frames : ts.AnyOf2<String, Array<AnimationFrame>>;
+	/**
+		If you provide a string for `frames` you can optionally have the frame names numerically sorted.
+	**/
+	@:optional
+	var sortFrames : Bool;
 	/**
 		The key of the texture all frames of the animation will use. Can be overridden on a per frame basis.
 	**/

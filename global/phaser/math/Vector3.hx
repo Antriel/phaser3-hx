@@ -26,9 +26,21 @@ package global.phaser.math;
 	**/
 	function up():Vector3;
 	/**
+		Sets the components of this Vector to be the `Math.min` result from the given vector.
+	**/
+	function min(v:Vector3):Vector3;
+	/**
+		Sets the components of this Vector to be the `Math.max` result from the given vector.
+	**/
+	function max(v:Vector3):Vector3;
+	/**
 		Make a clone of this Vector3.
 	**/
 	function clone():Vector3;
+	/**
+		Adds the two given Vector3s and sets the results into this Vector3.
+	**/
+	function addVectors(a:Vector3, b:Vector3):Vector3;
 	/**
 		Calculate the cross (vector) product of two given Vectors.
 	**/
@@ -48,9 +60,33 @@ package global.phaser.math;
 	**/
 	function set(x:ts.AnyOf2<Float, Dynamic>, ?y:Float, ?z:Float):Vector3;
 	/**
+		Sets the components of this Vector3 from the position of the given Matrix4.
+	**/
+	function setFromMatrixPosition(mat4:Matrix4):Vector3;
+	/**
+		Sets the components of this Vector3 from the Matrix4 column specified.
+	**/
+	function setFromMatrixColumn(mat4:Matrix4, index:Float):Vector3;
+	/**
+		Sets the components of this Vector3 from the given array, based on the offset.
+		
+		Vector3.x = array[offset]
+		Vector3.y = array[offset + 1]
+		Vector3.z = array[offset + 2]
+	**/
+	function fromArray(array:Array<Float>, ?offset:Float):Vector3;
+	/**
 		Add a given Vector to this Vector. Addition is component-wise.
 	**/
 	function add(v:ts.AnyOf2<Vector2, Vector3>):Vector3;
+	/**
+		Add the given value to each component of this Vector.
+	**/
+	function addScalar(s:Float):Vector3;
+	/**
+		Add and scale a given Vector to this Vector. Addition is component-wise.
+	**/
+	function addScale(v:ts.AnyOf2<Vector2, Vector3>, scale:Float):Vector3;
 	/**
 		Subtract the given Vector from this Vector. Subtraction is component-wise.
 	**/
@@ -112,11 +148,19 @@ package global.phaser.math;
 	**/
 	function lerp(v:Vector3, ?t:Float):Vector3;
 	/**
+		Takes a Matrix3 and applies it to this Vector3.
+	**/
+	function applyMatrix3(mat3:Matrix3):Vector3;
+	/**
+		Takes a Matrix4 and applies it to this Vector3.
+	**/
+	function applyMatrix4(mat4:Matrix4):Vector3;
+	/**
 		Transform this Vector with the given Matrix.
 	**/
 	function transformMat3(mat:Matrix3):Vector3;
 	/**
-		Transform this Vector with the given Matrix.
+		Transform this Vector with the given Matrix4.
 	**/
 	function transformMat4(mat:Matrix4):Vector3;
 	/**
@@ -132,6 +176,14 @@ package global.phaser.math;
 		e.g. unprojecting a 2D point into 3D space.
 	**/
 	function project(mat:Matrix4):Vector3;
+	/**
+		Multiplies this Vector3 by the given view and projection matrices.
+	**/
+	function projectViewMatrix(viewMatrix:Matrix4, projectionMatrix:Matrix4):Vector3;
+	/**
+		Multiplies this Vector3 by the given inversed projection matrix and world matrix.
+	**/
+	function unprojectViewMatrix(projectionMatrix:Matrix4, worldMatrix:Matrix4):Vector3;
 	/**
 		Unproject this point from 2D space to 3D space.
 		The point should have its x and y properties set to

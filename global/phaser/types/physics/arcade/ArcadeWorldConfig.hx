@@ -7,6 +7,11 @@ typedef ArcadeWorldConfig = {
 	@:optional
 	var fps : Float;
 	/**
+		Sets {@link Phaser.Physics.Arcade.World#fixedStep}.
+	**/
+	@:optional
+	var fixedStep : Bool;
+	/**
 		Sets {@link Phaser.Physics.Arcade.World#timeScale}.
 	**/
 	@:optional
@@ -106,4 +111,9 @@ typedef ArcadeWorldConfig = {
 	**/
 	@:optional
 	var useTree : Bool;
+	/**
+		If enabled, you need to call `World.update` yourself.
+	**/
+	@:optional
+	var customUpdate : Bool;
 };

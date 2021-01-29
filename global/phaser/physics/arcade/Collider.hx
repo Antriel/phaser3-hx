@@ -33,11 +33,11 @@ package global.phaser.physics.arcade;
 	/**
 		The callback to invoke when the two objects collide.
 	**/
-	dynamic function collideCallback(object1:global.phaser.gameobjects.GameObject, object2:global.phaser.gameobjects.GameObject):Void;
+	dynamic function collideCallback(object1:global.phaser.types.physics.arcade.GameObjectWithBody, object2:global.phaser.types.physics.arcade.GameObjectWithBody):Void;
 	/**
 		If a processCallback exists it must return true or collision checking will be skipped.
 	**/
-	dynamic function processCallback(object1:global.phaser.gameobjects.GameObject, object2:global.phaser.gameobjects.GameObject):Void;
+	dynamic function processCallback(object1:global.phaser.types.physics.arcade.GameObjectWithBody, object2:global.phaser.types.physics.arcade.GameObjectWithBody):Void;
 	/**
 		The context the collideCallback and processCallback will run in.
 	**/

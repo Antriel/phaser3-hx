@@ -44,6 +44,10 @@ package global.phaser.textures;
 	function removeKey(key:String):TextureManager;
 	/**
 		Adds a new Texture to the Texture Manager created from the given Base64 encoded data.
+		
+		It works by creating an `Image` DOM object, then setting the `src` attribute to
+		the given base64 encoded data. As a result, the process is asynchronous by its nature,
+		so be sure to listen for the events this method dispatches before using the texture.
 	**/
 	function addBase64(key:String, data:Dynamic):TextureManager;
 	/**
@@ -65,9 +69,12 @@ package global.phaser.textures;
 		
 		This allows you to then use the Texture as a normal texture for texture based Game Objects like Sprites.
 		
+		If the `width` and `height` arguments are omitted, but the WebGL Texture was created by Phaser's WebGL Renderer
+		and has `glTexture.width` and `glTexture.height` properties, these values will be used instead.
+		
 		This is a WebGL only feature.
 	**/
-	function addGLTexture(key:String, glTexture:js.html.webgl.Texture, width:Float, height:Float):Texture;
+	function addGLTexture(key:String, glTexture:js.html.webgl.Texture, ?width:Float, ?height:Float):Texture;
 	/**
 		Adds a Render Texture to the Texture Manager using the given key.
 		This allows you to then use the Render Texture as a normal texture for texture based Game Objects like Sprites.

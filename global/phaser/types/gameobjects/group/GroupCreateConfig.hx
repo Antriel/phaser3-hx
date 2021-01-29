@@ -137,6 +137,32 @@ typedef GroupCreateConfig = {
 	@:native("setScale.stepY")
 	var setScale_stepY : Float;
 	@:optional
+	var setOrigin : Dynamic;
+	/**
+		The horizontal origin of each new Game Object.
+	**/
+	@:optional
+	@:native("setOrigin.x")
+	var setOrigin_x : Float;
+	/**
+		The vertical origin of each new Game Object.
+	**/
+	@:optional
+	@:native("setOrigin.y")
+	var setOrigin_y : Float;
+	/**
+		Increment each Game Object's horizontal origin from the previous by this amount, starting from `setOrigin.x`.
+	**/
+	@:optional
+	@:native("setOrigin.stepX")
+	var setOrigin_stepX : Float;
+	/**
+		Increment each Game object's vertical origin from the previous by this amount, starting from `setOrigin.y`.
+	**/
+	@:optional
+	@:native("setOrigin.stepY")
+	var setOrigin_stepY : Float;
+	@:optional
 	var setAlpha : Dynamic;
 	/**
 		The alpha value of each new Game Object.

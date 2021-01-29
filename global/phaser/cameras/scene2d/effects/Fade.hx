@@ -56,7 +56,7 @@ package global.phaser.cameras.scene2d.effects;
 	/**
 		Called internally by the WebGL Renderer.
 	**/
-	function postRenderWebGL(pipeline:global.phaser.renderer.webgl.pipelines.TextureTintPipeline, getTintFunction:haxe.Constraints.Function):Bool;
+	function postRenderWebGL(pipeline:global.phaser.renderer.webgl.pipelines.MultiPipeline, getTintFunction:haxe.Constraints.Function):Bool;
 	/**
 		Called internally when the effect completes.
 	**/

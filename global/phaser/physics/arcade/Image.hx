@@ -12,6 +12,8 @@ package global.phaser.physics.arcade;
 		Creates and returns a Bitmap Mask. This mask can be used by any Game Object,
 		including this one.
 		
+		Note: Bitmap Masks only work on WebGL. Geometry Masks work on both WebGL and Canvas.
+		
 		To create the mask you need to pass in a reference to a renderable Game Object.
 		A renderable Game Object is one that uses a texture to render with, such as an
 		Image, Sprite, Render Texture or BitmapText.
@@ -219,13 +221,27 @@ package global.phaser.physics.arcade;
 	**/
 	function setGravityY(y:Float):Image;
 	/**
-		Sets Whether this Body can be moved by collisions with another Body.
+		Sets if this Body can be separated during collisions with other bodies.
+		
+		When a body is immovable it means it won't move at all, not even to separate it from collision
+		overlap. If you just wish to prevent a body from being knocked around by other bodies, see
+		the `setPushable` method instead.
 	**/
 	function setImmovable(?value:Bool):Image;
 	/**
 		Sets the mass of the physics body
 	**/
 	function setMass(value:Float):Image;
+	/**
+		Sets if this Body can be pushed by another Body.
+		
+		A body that cannot be pushed will reflect back all of the velocity it is given to the
+		colliding body. If that body is also not pushable, then the separation will be split
+		between them evenly.
+		
+		If you want your body to never move or seperate at all, see the `setImmovable` method.
+	**/
+	function setPushable(?value:Bool):Image;
 	/**
 		Sets the body offset. This allows you to adjust the difference between the center of the body
 		and the x and y coordinates of the parent Game Object.
@@ -359,7 +375,7 @@ package global.phaser.physics.arcade;
 		
 		You can also provide an Input Configuration Object as the only argument to this method.
 	**/
-	function setInteractive(?shape:Dynamic, ?callback:global.phaser.types.input.HitAreaCallback, ?dropZone:Bool):Image;
+	function setInteractive(?hitArea:Dynamic, ?callback:global.phaser.types.input.HitAreaCallback, ?dropZone:Bool):Image;
 	/**
 		If this Game Object has previously been enabled for input, this will disable it.
 		

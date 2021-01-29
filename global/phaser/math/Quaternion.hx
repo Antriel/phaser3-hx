@@ -6,6 +6,11 @@ package global.phaser.math;
 @:native("Phaser.Math.Quaternion") extern class Quaternion {
 	function new(?x:Float, ?y:Float, ?z:Float, ?w:Float);
 	/**
+		This callback is invoked, if set, each time a value in this quaternion is changed.
+		The callback is passed one argument, a reference to this quaternion.
+	**/
+	var onChangeCallback : haxe.Constraints.Function;
+	/**
 		The x component of this Quaternion.
 	**/
 	var x : Float;
@@ -26,9 +31,9 @@ package global.phaser.math;
 	**/
 	function copy(src:ts.AnyOf2<Vector4, Quaternion>):Quaternion;
 	/**
-		Set the components of this Quaternion.
+		Set the components of this Quaternion and optionally call the `onChangeCallback`.
 	**/
-	function set(?x:ts.AnyOf2<Float, Dynamic>, ?y:Float, ?z:Float, ?w:Float):Quaternion;
+	function set(?x:ts.AnyOf2<Float, Dynamic>, ?y:Float, ?z:Float, ?w:Float, ?update:Bool):Quaternion;
 	/**
 		Add a given Quaternion or Vector to this Quaternion. Addition is component-wise.
 	**/
@@ -113,6 +118,14 @@ package global.phaser.math;
 		Sets the w component.
 	**/
 	function calculateW():Quaternion;
+	/**
+		Set this Quaternion from the given Euler, based on Euler order.
+	**/
+	function setFromEuler(euler:Euler, ?update:Bool):Quaternion;
+	/**
+		Sets the rotation of this Quaternion from the given Matrix4.
+	**/
+	function setFromRotationMatrix(mat4:Matrix4):Quaternion;
 	/**
 		Convert the given Matrix into this Quaternion.
 	**/

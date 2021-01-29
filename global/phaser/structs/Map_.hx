@@ -59,7 +59,9 @@ package global.phaser.structs;
 	**/
 	function dump():Void;
 	/**
-		Passes all entries in this Map to the given callback.
+		Iterates through all entries in this Map, passing each one to the given callback.
+		
+		If the callback returns `false`, the iteration will break.
 	**/
 	function each(callback:global.EachMapCallback<V>):Map_<K, V>;
 	/**
